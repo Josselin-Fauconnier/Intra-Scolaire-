@@ -25,13 +25,14 @@ services:
       - symfony_network
 
   database:
-    image: mysql:8.0
+    image: mariadb:latest
     container_name: symfony_db
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: symfony
-      MYSQL_USER: symfony
-      MYSQL_PASSWORD: symfony
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: symfony
+      MARIADB_USER: symfony
+      MARIADB_PASSWORD: symfony
     ports:
       - "3306:3306"
     volumes:
