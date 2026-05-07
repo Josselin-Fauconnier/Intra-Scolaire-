@@ -4,12 +4,15 @@ namespace App\Entity;
 
 use App\Enum\UserRole;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -42,14 +45,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: UserRole::class)]
     private array $role = [];
 
-    #[ORM\Column]
-    private ?int $phone_number = null;
+    #[ORM\Column(length: 20)]
+    private ?string $phone_number = null;
 
-    #[ORM\Column]
-    private ?int $parent_phone_number = null;
+    #[ORM\Column(length: 20)]
+    private ?string $parent_phone_number = null;
 
     #[ORM\Column(length: 255)]
     private ?string $parent_email = null;
+
+    /**
+     * @var Collection<int, Classes>
+     */
+    #[ORM\OneToMany(targetEntity: Classes::class, mappedBy: 'professor_id', orphanRemoval: true)]
+    private Collection $classes;
+
+    public function __construct()
+    {
+        $this->classes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -165,24 +179,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPhoneNumber(): ?int
+    public function getPhoneNumber(): ?string
     {
         return $this->phone_number;
     }
 
-    public function setPhoneNumber(int $phone_number): static
+    public function setPhoneNumber(string $phone_number): static
     {
         $this->phone_number = $phone_number;
 
         return $this;
     }
 
-    public function getParentPhoneNumber(): ?int
+    public function getParentPhoneNumber(): ?string
     {
         return $this->parent_phone_number;
     }
 
-    public function setParentPhoneNumber(int $parent_phone_number): static
+    public function setParentPhoneNumber(string $parent_phone_number): static
     {
         $this->parent_phone_number = $parent_phone_number;
 
@@ -197,6 +211,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setParentEmail(string $parent_email): static
     {
         $this->parent_email = $parent_email;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Classes>
+     */
+    public function getClasses(): Collection
+    {
+        return $this->classes;
+    }
+
+    public function addClass(Classes $class): static
+    {
+        if (!$this->classes->contains($class)) {
+            $this->classes->add($class);
+            $class->setProfessorId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClass(Classes $class): static
+    {
+        if ($this->classes->removeElement($class)) {
+            // set the owning side to null (unless already changed)
+            if ($class->getProfessorId() === $this) {
+                $class->setProfessorId(null);
+            }
+        }
 
         return $this;
     }
