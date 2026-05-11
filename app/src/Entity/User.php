@@ -58,9 +58,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Classes::class, mappedBy: 'professor_id', orphanRemoval: true)]
     private Collection $classes;
 
+    #[ORM\Column]
+    private ?bool $isApproved = null;
+
     public function __construct()
     {
         $this->classes = new ArrayCollection();
+        $this->isApproved = false;
     }
 
     public function getId(): ?int
@@ -232,6 +236,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $class->setProfessorId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isApproved(): ?bool
+    {
+        return $this->isApproved;
+    }
+
+    public function setIsApproved(bool $isApproved): static
+    {
+        $this->isApproved = $isApproved;
 
         return $this;
     }
