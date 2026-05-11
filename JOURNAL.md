@@ -95,3 +95,18 @@
 ### 2026/05/11 - Cosmin
 
 J'ai supprimé 'le colonne "roles" du User et adapté la colonne "role" pout qu'elle correspond aux critéres de sécurité Symfony.
+
+### 2026/05/11 - Khaly
+
+- php bin/console make:auth
+  - Login form authenticator
+  - SecurityController (name)
+  - app_home (redirect after login)
+  - yes (logout support)
+
+- php bin/console make:registration-form
+  - yes (UniqueEntity)
+  - app_home (redirect after registration)
+  - no (PHPUnit tests)
+
+- php bin/console make:controller HomeController
