@@ -6,32 +6,7 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
         {% endblock %}
-        <style>
-            .site-header {
-                background-color: #c8ad7f;
-                text-align: center;
-                padding: 1.25rem 1rem;
-            }
-            .site-header h1 {
-                margin: 0;
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: #7a3000;
-            }
-            .site-footer {
-                background-color: #ffffff;
-                text-align: center;
-                padding: 1.25rem 1rem;
-            }
-            .site-footer p {
-                margin: 0;
-                font-size: 1rem;
-                font-weight: 600;
-                color: #7a3000;
-            }
-        </style>
-
-        {% block javascripts %}
+{% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
 

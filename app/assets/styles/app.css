@@ -3,3 +3,26 @@ body {
     margin: 0;
     font-family: sans-serif;
 }
+
+.site-header {
+    background-color: #c8ad7f;
+    text-align: center;
+    padding: 1.25rem 1rem;
+}
+.site-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #7a3000;
+}
+.site-footer {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 1.25rem 1rem;
+}
+.site-footer p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7a3000;
+}

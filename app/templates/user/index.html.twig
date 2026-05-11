@@ -39,6 +39,12 @@
                             <button type="submit">Approuver</button>
                         </form>
                     {% endif %}
+                    {% if is_granted('ROLE_ADMIN') and user.isApproved %}
+                        <form method="post" action="{{ path('app_user_disable', {id: user.id}) }}" style="display:inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('disable' ~ user.id) }}">
+                            <button type="submit">Désactiver</button>
+                        </form>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}

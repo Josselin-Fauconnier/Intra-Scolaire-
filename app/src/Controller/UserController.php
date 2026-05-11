@@ -118,4 +118,16 @@ final class UserController extends AbstractController
 
         return $this->redirectToRoute('app_user_index');
     }
+
+    #[Route('/{id}/disable', name: 'app_user_disable', methods: ['POST'])]
+    public function disable(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('disable'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $user->setIsApproved(false);
+            $entityManager->flush();
+            $this->logger->log($this->getUser(), 'DISABLE_USER:' . $user->getEmail());
+        }
+
+        return $this->redirectToRoute('app_user_index');
+    }
 }
