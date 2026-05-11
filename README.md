@@ -1,0 +1,7 @@
+- Demarrer Docker
+- Lancer la commande "docker-compose up" à la racine du dossier
+- Dans un autre terminal, lancer "docker exec -it symfony_app bash", puis lancer les commandes suivantes dans ce terminal:
+  - chown -R www-data:www-data /var/www/html
+  - chmod -R 775 /var/www/html/var
+  - composer install
+  - exit
