@@ -14,9 +14,10 @@ class Documents
     #[ORM\Column]
     private ?int $id = null;
 
+    // Renommé en $user (au lieu de $user_id) et User avec une majuscule
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?user $user_id = null;
+    private ?User $user = null;
 
     #[ORM\Column(nullable: true, enumType: DocumentType::class)]
     private ?DocumentType $type = null;
@@ -32,15 +33,16 @@ class Documents
         return $this->id;
     }
 
-    public function getUserId(): ?user
+    // Le getter s'appelle maintenant getUser()
+    public function getUser(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?user $user_id): static
+    // Le setter s'appelle maintenant setUser()
+    public function setUser(?User $user): static
     {
-        $this->user_id = $user_id;
-
+        $this->user = $user;
         return $this;
     }
 
@@ -52,7 +54,6 @@ class Documents
     public function setType(?DocumentType $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
@@ -64,7 +65,6 @@ class Documents
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -76,7 +76,6 @@ class Documents
     public function setPath(string $path): static
     {
         $this->path = $path;
-
         return $this;
     }
 }

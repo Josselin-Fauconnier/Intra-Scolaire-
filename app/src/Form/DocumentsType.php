@@ -8,6 +8,8 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
 
 class DocumentsType extends AbstractType
 {
@@ -16,14 +18,28 @@ class DocumentsType extends AbstractType
         $builder
             ->add('type')
             ->add('title')
-            ->add('path')
-            ->add('user_id', EntityType::class, [
-                'class' => user::class,
-                'choice_label' => 'id',
+            // On a supprimé ->add('path') car il est géré par l'upload
+            ->add('user', EntityType::class, [ // Souvent le champ s'appelle 'user' et non 'user_id' dans l'entité
+                'class' => User::class, // Avec un U majuscule !
+                'choice_label' => 'email', // C'est plus sympa d'afficher l'email que l'ID dans la liste
             ])
-        ;
+            ->add('attachment', FileType::class, [
+                'label' => 'Fichier du cours (PDF, Vidéo...)',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File(
+                        maxSize: '5M', // Argument nommé (PHP 8)
+                        mimeTypes: [
+                            'application/pdf',
+                            'application/x-pdf',
+                            'video/mp4',
+                        ],
+                        mimeTypesMessage: "Merci d'uploader un document valide (PDF ou MP4)"
+                    )
+                ],
+            ]);
     }
-
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
