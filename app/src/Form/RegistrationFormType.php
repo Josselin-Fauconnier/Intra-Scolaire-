@@ -21,24 +21,40 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email', EmailType::class)
-            ->add('firstname', TextType::class)
-            ->add('lastname', TextType::class)
+            ->add('email', EmailType::class, [
+                'label' => 'Adresse email',
+            ])
+            ->add('firstname', TextType::class, [
+                'label' => 'Prénom',
+            ])
+            ->add('lastname', TextType::class, [
+                'label' => 'Nom',
+            ])
             ->add('role', ChoiceType::class, [
+                'label' => 'Rôle',
                 'choices' => UserRole::cases(),
                 'choice_label' => fn(UserRole $r) => $r->getLabel(),
                 'choice_value' => fn(?UserRole $r) => $r?->value,
                 'multiple' => true,
                 'expanded' => true,
             ])
-            ->add('phone_number', TextType::class)
-            ->add('parent_phone_number', TextType::class)
-            ->add('parent_email', EmailType::class)
+            ->add('phone_number', TextType::class, [
+                'label' => 'Numéro de téléphone',
+            ])
+            ->add('parent_phone_number', TextType::class, [
+                'label' => 'Téléphone du parent',
+                'required' => false,
+            ])
+            ->add('parent_email', EmailType::class, [
+                'label' => 'Email du parent',
+                'required' => false,
+            ])
             ->add('agreeTerms', CheckboxType::class, [
+                'label' => "J'accepte les conditions d'utilisation",
                 'mapped' => false,
                 'constraints' => [
                     new IsTrue(
-                        message: 'You should agree to our terms.',
+                        message: "Vous devez accepter les conditions d'utilisation.",
                     ),
                 ],
             ])
