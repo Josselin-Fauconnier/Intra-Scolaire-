@@ -91,3 +91,7 @@
 
 - php bin/console make:migration
 - php bin/console doctrine:migrations:migrate
+
+### 2026/05/11 - Cosmin
+
+J'ai supprimé 'le colonne "roles" du User et adapté la colonne "role" pout qu'elle correspond aux critéres de sécurité Symfony.
