@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\ActionLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/user')]
 final class UserController extends AbstractController
 {
+    public function __construct(private ActionLogger $logger) {}
+
     #[Route(name: 'app_user_index', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
@@ -39,6 +42,8 @@ final class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $this->logger->log($this->getUser(), 'CREATE_USER:' . $user->getEmail());
 
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -79,6 +84,8 @@ final class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->logger->log($this->getUser(), 'EDIT_USER:' . $user->getEmail());
+
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -92,6 +99,7 @@ final class UserController extends AbstractController
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
+            $this->logger->log($this->getUser(), 'DELETE_USER:' . $user->getEmail());
             $entityManager->remove($user);
             $entityManager->flush();
         }
@@ -105,6 +113,7 @@ final class UserController extends AbstractController
         if ($this->isCsrfTokenValid('approve'.$user->getId(), $request->getPayload()->getString('_token'))) {
             $user->setIsApproved(true);
             $entityManager->flush();
+            $this->logger->log($this->getUser(), 'APPROVE_USER:' . $user->getEmail());
         }
 
         return $this->redirectToRoute('app_user_index');
