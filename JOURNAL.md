@@ -110,3 +110,8 @@ J'ai supprimé 'le colonne "roles" du User et adapté la colonne "role" pout qu'
   - no (PHPUnit tests)
 
 - php bin/console make:controller HomeController
+
+### 2026/05/11 - Josselin
+
+- php bin/console make:command app:purge-logs
+  - Supprime les logs UserActions de plus de 12 mois 

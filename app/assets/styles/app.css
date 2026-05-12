@@ -1,3 +1,170 @@
 body {
-    background-color: skyblue;
+    background-color: #c8ad7f;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.site-header {
+    background-color: #c8ad7f;
+    text-align: center;
+    padding: 1.25rem 1rem;
+}
+.site-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #7a3000;
+}
+.site-footer {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 1.25rem 1rem;
+}
+.site-footer p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7a3000;
+}
+
+/* Login */
+.login-wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+.login-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a3a5c;
+    margin-bottom: 1.25rem;
+}
+.login-card {
+    background-color: #1a3a5c !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 420px;
+}
+.login-card label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+.login-card input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #5a80a8;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #1a3a5c;
+}
+.login-card button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #f5efe0;
+    color: #1a3a5c;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.login-card button:hover {
+    background-color: #e8dcc8;
+}
+.alert-danger {
+    background-color: #fde8e8;
+    color: #a00;
+    border: 1px solid #f5c6c6;
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Register */
+.register-wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+.register-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a3a5c;
+    margin-bottom: 1.25rem;
+}
+.register-card {
+    background-color: #1a3a5c !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 1.25rem 2.5rem;
+    width: 100%;
+    max-width: 640px;
+}
+.register-card label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+.register-card input[type="text"],
+.register-card input[type="email"],
+.register-card input[type="password"],
+.register-card input[type="tel"],
+.register-card select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #5a80a8;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #1a3a5c;
+}
+.register-card input[type="checkbox"] {
+    margin-right: 0.5rem;
+    accent-color: #c8ad7f;
+}
+.register-card .form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+.register-card .form-error,
+.register-card ul {
+    color: #ffb3b3;
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem 0;
+    padding-left: 1rem;
+}
+.register-card button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #c8ad7f;
+    color: #1a3a5c;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.register-card button[type="submit"]:hover {
+    background-color: #b89a68;
 }
