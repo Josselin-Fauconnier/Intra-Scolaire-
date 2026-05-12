@@ -29,7 +29,7 @@ services:
     container_name: symfony_db
     environment:
       POSTGRES_DB: symfony_db
-      POSTGRESL_USER: symfony
+      POSTGRES_USER: symfony
       POSTGRES_PASSWORD: symfony
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "symfony_db", "-U", "symfony"]
