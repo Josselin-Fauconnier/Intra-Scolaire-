@@ -25,17 +25,21 @@ services:
       - symfony_network
 
   database:
-    image: mysql:8.0
+    image: postgres:${POSTGRES_VERSION:-16}-alpine
     container_name: symfony_db
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: symfony
-      MYSQL_USER: symfony
-      MYSQL_PASSWORD: symfony
+      POSTGRES_DB: symfony_db
+      POSTGRESL_USER: symfony
+      POSTGRES_PASSWORD: symfony
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "symfony_db", "-U", "symfony"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data:rw
     networks:
       - symfony_network
 
@@ -49,25 +53,6 @@ services:
       - database
     networks:
       - symfony_network
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: symfony_phpmyadmin
-    restart: always
-    ports:
-      - "8082:80"
-    environment:
-      PMA_HOST: symfony_db
-      MYSQL_ROOT_PASSWORD: root
-      PMA_PMADB: phpmyadmin
-      PMA_CONTROLUSER: symfony
-      PMA_CONTROLPASS: symfony
-    depends_on:
-      - database
-    networks:
-      - symfony_network
-    volumes:
-      - phpmyadmin_data:/var/lib/phpmyadmin
 
 networks:
   symfony_network:
