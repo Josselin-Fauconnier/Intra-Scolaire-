@@ -20,7 +20,7 @@ class Promotions
 
     #[ORM\ManyToOne(inversedBy: 'promotions')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $professor_id = null;
+    private ?User $professor = null;
 
     /**
      * @var Collection<int, PromtionUsers>
@@ -59,12 +59,12 @@ class Promotions
 
     public function getProfessorId(): ?User
     {
-        return $this->professor_id;
+        return $this->professor;
     }
 
-    public function setProfessorId(?User $professor_id): static
+    public function setProfessorId(?User $professor): static
     {
-        $this->professor_id = $professor_id;
+        $this->professor = $professor;
 
         return $this;
     }

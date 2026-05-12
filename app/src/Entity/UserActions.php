@@ -16,7 +16,7 @@ class UserActions
 
     #[ORM\ManyToOne(inversedBy: 'userActions')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $user = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $action = null;
@@ -31,12 +31,12 @@ class UserActions
 
     public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

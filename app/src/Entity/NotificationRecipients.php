@@ -15,11 +15,11 @@ class NotificationRecipients
 
     #[ORM\ManyToOne(inversedBy: 'notificationRecipients')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Notifications $notification_id = null;
+    private ?Notifications $notification = null;
 
     #[ORM\ManyToOne(inversedBy: 'notificationRecipients')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $user = null;
 
     #[ORM\Column]
     private ?bool $is_read = null;
@@ -34,24 +34,24 @@ class NotificationRecipients
 
     public function getNotificationId(): ?Notifications
     {
-        return $this->notification_id;
+        return $this->notification;
     }
 
-    public function setNotificationId(?Notifications $notification_id): static
+    public function setNotificationId(?Notifications $notification): static
     {
-        $this->notification_id = $notification_id;
+        $this->notification = $notification;
 
         return $this;
     }
 
     public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

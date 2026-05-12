@@ -15,11 +15,11 @@ class PromtionUsers
 
     #[ORM\ManyToOne(inversedBy: 'promtionUsers')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'promtionUsers')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Promotions $promotion_id = null;
+    private ?Promotions $promotion = null;
 
     public function getId(): ?int
     {
@@ -28,24 +28,24 @@ class PromtionUsers
 
     public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }
 
     public function getPromotionId(): ?Promotions
     {
-        return $this->promotion_id;
+        return $this->promotion;
     }
 
-    public function setPromotionId(?Promotions $promotion_id): static
+    public function setPromotionId(?Promotions $promotion): static
     {
-        $this->promotion_id = $promotion_id;
+        $this->promotion = $promotion;
 
         return $this;
     }

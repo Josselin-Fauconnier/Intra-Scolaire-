@@ -16,11 +16,11 @@ class Grades
 
     #[ORM\ManyToOne(inversedBy: 'grades')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Projects $project_id = null;
+    private ?Projects $project = null;
 
     #[ORM\ManyToOne(inversedBy: 'grades')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $student_id = null;
+    private ?User $student = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $grade = null;
@@ -41,24 +41,24 @@ class Grades
 
     public function getProjectId(): ?Projects
     {
-        return $this->project_id;
+        return $this->project;
     }
 
-    public function setProjectId(?Projects $project_id): static
+    public function setProjectId(?Projects $project): static
     {
-        $this->project_id = $project_id;
+        $this->project = $project;
 
         return $this;
     }
 
     public function getStudentId(): ?User
     {
-        return $this->student_id;
+        return $this->student;
     }
 
-    public function setStudentId(?User $student_id): static
+    public function setStudentId(?User $student): static
     {
-        $this->student_id = $student_id;
+        $this->student = $student;
 
         return $this;
     }
