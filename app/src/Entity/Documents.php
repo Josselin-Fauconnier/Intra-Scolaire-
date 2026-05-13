@@ -2,10 +2,8 @@
 
 namespace App\Entity;
 
-use App\Repository\DocumentsRepository;
 use App\Enum\DocumentType;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Repository\DocumentsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DocumentsRepository::class)]
@@ -16,44 +14,35 @@ class Documents
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'documents')]
+    // Renommé en $user (au lieu de $user_id) et User avec une majuscule
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column(type: 'string', enumType: DocumentType::class)]
-    private ?DocumentType $type = DocumentType::PDF;
+    #[ORM\Column(nullable: true, enumType: DocumentType::class)]
+    private ?DocumentType $type = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $path = null;
-
-    /**
-     * @var Collection<int, Absences>
-     */
-    #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'document')]
-    private Collection $absences;
-
-    public function __construct()
-    {
-        $this->absences = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    // Le getter s'appelle maintenant getUser()
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUserId(?User $user): static
+    // Le setter s'appelle maintenant setUser()
+    public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -62,7 +51,7 @@ class Documents
         return $this->type;
     }
 
-    public function setType(DocumentType $type): static
+    public function setType(?DocumentType $type): static
     {
         $this->type = $type;
         return $this;
@@ -76,7 +65,6 @@ class Documents
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -88,37 +76,6 @@ class Documents
     public function setPath(string $path): static
     {
         $this->path = $path;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Absences>
-     */
-    public function getAbsences(): Collection
-    {
-        return $this->absences;
-    }
-
-    public function addAbsence(Absences $absence): static
-    {
-        if (!$this->absences->contains($absence)) {
-            $this->absences->add($absence);
-            $absence->setDocumentId($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAbsence(Absences $absence): static
-    {
-        if ($this->absences->removeElement($absence)) {
-            // set the owning side to null (unless already changed)
-            if ($absence->getDocumentId() === $this) {
-                $absence->setDocumentId(null);
-            }
-        }
-
         return $this;
     }
 }

@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Documents{% endblock %}
+
+{% block stylesheets %}
+    {# On place les icônes et le CSS personnalisé ici pour qu'ils soient dans le <head> #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* 1. Effet au survol des lignes */
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        /* 2. TRACÉ DU TABLEAU */
+        .table { 
+            border-collapse: collapse !important; 
+        }
+        
+        .table-bordered, 
+        .table-bordered th, 
+        .table-bordered td {
+            border: 1px solid #dee2e6 !important; /* Gris standard plus élégant que le noir pur */
+        }
+
+        /* 3. Style spécifique de l'en-tête */
+        .table-light th {
+            background-color: #f8f9fa !important;
+            color: #2c3e50 !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        /* 4. Ajustement des cellules */
+        .table td {
+            padding: 12px 15px !important;
+        }
+
+        .type-tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            text-transform: uppercase;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    {# En-tête de page #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 text-primary">
+            <i class="bi bi-journal-bookmark-fill"></i> Liste des documents
+        </h1>
+        <a href="{{ path('app_documents_new') }}" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-lg"></i> Ajouter un document
+        </a>
+    </div>
+
+    {# Conteneur du tableau #}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Type</th>
+                        <th>Titre</th>
+                        <th>Nom du fichier</th>
+                        <th colspan="3" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for document in documents %}
+                    <tr class="align-middle">
+                        <td class="ps-4 text-muted">#{{ document.id }}</td>
+                        <td>
+                            {% set typeValue = document.type.value|default('inconnu')|lower %}
+                            {% set color = '#6c757d' %}
+                            {% if typeValue == 'pdf' %}
+                                {% set color = '#e74c3c' %}
+                            {% elseif typeValue == 'video' %}
+                                {% set color = '#3498db' %}
+                            {% endif %}
+
+                            <span class="type-tag" style="background-color: {{ color }};">
+                                {{ typeValue }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">{{ document.title }}</td>
+                        <td>
+                            <code class="small text-muted">{{ document.path|default('Aucun chemin') }}</code>
+                        </td>
+                        <td class="text-center">
+                             <a href="{{ path('app_documents_show', {'id': document.id}) }}" class="btn btn-outline-info btn-sm">
+                                Voir
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ path('app_documents_edit', {'id': document.id}) }}" class="btn btn-outline-warning btn-sm">
+                                Modifier
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            {% if document.path %}
+                                <a href="{{ asset('uploads/documents/' ~ document.path) }}" 
+                                   class="btn btn-outline-primary btn-sm" 
+                                   download="{{ document.title }}">
+                                    <i class="bi bi-download"></i> Télécharger
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        {# Correction du colspan : 4 colonnes de données + 3 d'actions = 7 #}
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <p class="mb-0">Aucun document enregistré pour le moment.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
