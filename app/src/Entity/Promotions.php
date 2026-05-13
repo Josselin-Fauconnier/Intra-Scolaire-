@@ -25,13 +25,13 @@ class Promotions
     /**
      * @var Collection<int, PromotionUsers>
      */
-    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'promotion_id')]
+    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'promotion')]
     private Collection $promotionUsers;
 
     /**
      * @var Collection<int, Projects>
      */
-    #[ORM\OneToMany(targetEntity: Projects::class, mappedBy: 'prmotion_id')]
+    #[ORM\OneToMany(targetEntity: Projects::class, mappedBy: 'promotion')]
     private Collection $projects;
 
     public function __construct()
