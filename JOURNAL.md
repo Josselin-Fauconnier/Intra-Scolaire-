@@ -184,3 +184,22 @@ Créé manuellement (pas de commande make: disponible) :
 
 - src/Repository/UserActionsRepository.php
   - Ajout de la méthode deleteOlderThan(\DateTimeImmutable $before): int
+
+### 2026/05/13 - Amad (suite)
+
+- CRUD généré via `make:crud` pour les entités suivantes :
+  - `Promotions` → PromotionsController + PromotionsType + templates/promotions/
+  - `PromotionUsers` → PromotionUsersController + PromotionUsersType + templates/promotion_users/
+  - `Absences` → AbsencesController + AbsencesType + templates/absences/
+  - `Grades` → GradesController + GradesType + templates/grades/
+  - `Projects` → ProjectsController + ProjectsType + templates/projects/
+
+- Correction des `choice_label` générés avec `'id'` par défaut dans tous les FormType :
+  - Relations User → `fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname()`
+  - Relations Promotions → `'name'`
+  - Relations Projects → `'title'`
+  - Relations Documents → `'title'`
+
+- Ajout des types corrects pour les champs date (`DateTimeType`, `widget: single_text`), booléen (`CheckboxType`) et enum (`EnumType`) dans les FormType concernés
+
+- Mise à jour des templates `index.html.twig` pour afficher les relations (nom du prof, de l'étudiant, de la promo) au lieu de l'id brut

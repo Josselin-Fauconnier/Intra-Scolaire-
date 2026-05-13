@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Absences{% endblock %}
+
+{% block body %}
+    <h1>Absences</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ absence.id }}</td>
+            </tr>
+            <tr>
+                <th>Start_date</th>
+                <td>{{ absence.startDate ? absence.startDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>End_date</th>
+                <td>{{ absence.endDate ? absence.endDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_absences_index') }}">back to list</a>
+
+    <a href="{{ path('app_absences_edit', {'id': absence.id}) }}">edit</a>
+
+    {{ include('absences/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit PromotionUsers{% endblock %}
+
+{% block body %}
+    <h1>Edit PromotionUsers</h1>
+
+    {{ include('promotion_users/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_promotion_users_index') }}">back to list</a>
+
+    {{ include('promotion_users/_delete_form.html.twig') }}
+{% endblock %}
