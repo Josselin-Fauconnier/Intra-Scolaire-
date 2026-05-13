@@ -12,6 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -21,6 +22,16 @@ class RegistrationFormType extends AbstractType
             ->add('email')
             ->add('firstname', TextType::class)
             ->add('lastname', TextType::class)
+            ->add('phone_number', TextType::class, [
+                'required' => false,
+                'label' => 'Phone number',
+                'constraints' => [
+                    new Regex(
+                        pattern: '/^\+?[0-9]{7,15}$/',
+                        message: 'Please enter a valid phone number (digits only).',
+                    ),
+                ]
+            ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [

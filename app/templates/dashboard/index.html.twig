@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello DashboardController!{% endblock %}
+{% block title %}Hello {{ user.lastname }}!{% endblock %}
 
 {% block body %}
 <style>
@@ -9,12 +9,9 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <h1>Hello {{ user.firstname }} {{ user.lastname }}! </h1>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/var/www/html/src/Controller/DashboardController.php</code></li>
-        <li>Your template at <code>/var/www/html/templates/dashboard/index.html.twig</code></li>
-    </ul>
+    <a href="{{ logout_path()}}">Logout</a>
+    
 </div>
 {% endblock %}

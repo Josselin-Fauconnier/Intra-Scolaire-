@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\Table(name: '"user"')]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -53,43 +54,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Promotions>
      */
-    #[ORM\OneToMany(targetEntity: Promotions::class, mappedBy: 'professor_id')]
+    #[ORM\OneToMany(targetEntity: Promotions::class, mappedBy: 'professor')]
     private Collection $promotions;
 
     /**
      * @var Collection<int, PromotionUsers>
      */
-    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'user')]
     private Collection $promotionUsers;
 
     /**
      * @var Collection<int, Documents>
      */
-    #[ORM\OneToMany(targetEntity: Documents::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: Documents::class, mappedBy: 'user')]
     private Collection $documents;
 
     /**
      * @var Collection<int, Absences>
      */
-    #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'user_id', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $absences;
 
     /**
      * @var Collection<int, Grades>
      */
-    #[ORM\OneToMany(targetEntity: Grades::class, mappedBy: 'student_id', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Grades::class, mappedBy: 'student', orphanRemoval: true)]
     private Collection $grades;
 
     /**
      * @var Collection<int, NotificationRecipients>
      */
-    #[ORM\OneToMany(targetEntity: NotificationRecipients::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: NotificationRecipients::class, mappedBy: 'user')]
     private Collection $notificationRecipients;
 
     /**
      * @var Collection<int, UserActions>
      */
-    #[ORM\OneToMany(targetEntity: UserActions::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: UserActions::class, mappedBy: 'user')]
     private Collection $userActions;
 
     public function __construct()

@@ -146,6 +146,21 @@ $user->setRoles(['ROLE_TEACHER']); // This is an array'''
 
 J'ai aussi ajouté les enums (voir src/Enum).
 
-### 2026/05/13 - Amad 
-- php bin/console debug:router
-  
+### 2026/05/13 - Amad
+
+- Ajout des champs manquants dans `RegistrationFormType.php` :
+  - `phone_number` (TextType, optionnel, avec contrainte Regex `/^\+?[0-9]{7,15}$/` pour n'autoriser que les chiffres)
+  - `github` (TextType, optionnel)
+  - `google_drive` (TextType, optionnel)
+
+- Ajout des champs correspondants dans `templates/registration/register.html.twig`
+
+- Correction des `mappedBy` incorrects dans les entités (les noms référençaient les anciennes propriétés snake_case type `user_id`, `professor_id` au lieu des noms camelCase actuels) :
+  - `User.php` : 7 corrections (`professor_id` → `professor`, `user_id` → `user`, `student_id` → `student`)
+  - `Promotions.php` : 2 corrections (`promotion_id` → `promotion`, `prmotion_id` → `promotion`)
+  - `Documents.php` : `document_id` → `document`
+  - `Notifications.php` : `notification_id` → `notification`
+  - `Projects.php` : `project_id` → `project`
+
+- Correction de l'erreur `column t0.id does not exist` :
+  `user` est un mot réservé PostgreSQL. Ajout de `#[ORM\Table(name: '"user"')]` dans `User.php` pour forcer le quoting du nom de table dans les requêtes SQL.
