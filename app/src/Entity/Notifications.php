@@ -29,7 +29,7 @@ class Notifications
     /**
      * @var Collection<int, NotificationRecipients>
      */
-    #[ORM\OneToMany(targetEntity: NotificationRecipients::class, mappedBy: 'notification_id')]
+    #[ORM\OneToMany(targetEntity: NotificationRecipients::class, mappedBy: 'notification')]
     private Collection $notificationRecipients;
 
     public function __construct()

@@ -32,7 +32,7 @@ class Documents
     /**
      * @var Collection<int, Absences>
      */
-    #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'document_id')]
+    #[ORM\OneToMany(targetEntity: Absences::class, mappedBy: 'document')]
     private Collection $absences;
 
     public function __construct()
