@@ -164,3 +164,23 @@ J'ai aussi ajouté les enums (voir src/Enum).
 
 - Correction de l'erreur `column t0.id does not exist` :
   `user` est un mot réservé PostgreSQL. Ajout de `#[ORM\Table(name: '"user"')]` dans `User.php` pour forcer le quoting du nom de table dans les requêtes SQL.
+### 2026/05/13 - Josselin
+
+ Journalisation des accès et actions sensibles (RGPD)
+
+Créé manuellement (pas de commande make: disponible) :
+
+- src/Service/ActionLogger.php
+  - Service qui enregistre une action en base (user + action + horodatage)
+  - Utilisé par AuthenticationListener et les contrôleurs
+
+- src/EventListener/AuthenticationListener.php
+  - Écoute LoginSuccessEvent et LogoutEvent de Symfony
+  - Log automatiquement LOGIN et LOGOUT via ActionLogger
+
+- src/Command/PurgeLogsCommand.php
+  - php bin/console app:purge-logs
+  - Supprime les logs UserActions de plus de 12 mois 
+
+- src/Repository/UserActionsRepository.php
+  - Ajout de la méthode deleteOlderThan(\DateTimeImmutable $before): int

@@ -16,28 +16,13 @@ class UserActionsRepository extends ServiceEntityRepository
         parent::__construct($registry, UserActions::class);
     }
 
-    //    /**
-    //     * @return UserActions[] Returns an array of UserActions objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?UserActions
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function deleteOlderThan(\DateTimeImmutable $before): int
+    {
+        return $this->createQueryBuilder('u')
+            ->delete()
+            ->where('u.created_at < :before')
+            ->setParameter('before', $before)
+            ->getQuery()
+            ->execute();
+    }
 }
