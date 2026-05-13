@@ -2,22 +2,22 @@
 
 namespace App\Entity;
 
-use App\Repository\PromtionUsersRepository;
+use App\Repository\PromotionUsersRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: PromtionUsersRepository::class)]
-class PromtionUsers
+#[ORM\Entity(repositoryClass: PromotionUsersRepository::class)]
+class PromotionUsers
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'promtionUsers')]
+    #[ORM\ManyToOne(inversedBy: 'promotionUsers')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'promtionUsers')]
+    #[ORM\ManyToOne(inversedBy: 'promotionUsers')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Promotions $promotion = null;
 

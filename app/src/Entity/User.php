@@ -55,10 +55,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $promotions;
 
     /**
-     * @var Collection<int, PromtionUsers>
+     * @var Collection<int, PromotionUsers>
      */
-    #[ORM\OneToMany(targetEntity: PromtionUsers::class, mappedBy: 'user_id')]
-    private Collection $promtionUsers;
+    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'user_id')]
+    private Collection $promotionUsers;
 
     /**
      * @var Collection<int, Documents>
@@ -93,7 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->promotions = new ArrayCollection();
-        $this->promtionUsers = new ArrayCollection();
+        $this->promotionUsers = new ArrayCollection();
         $this->documents = new ArrayCollection();
         $this->absences = new ArrayCollection();
         $this->grades = new ArrayCollection();
@@ -171,7 +171,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
 
         return $data;
     }
@@ -267,29 +267,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, PromtionUsers>
+     * @return Collection<int, PromotionUsers>
      */
-    public function getPromtionUsers(): Collection
+    public function getPromotionUsers(): Collection
     {
-        return $this->promtionUsers;
+        return $this->promotionUsers;
     }
 
-    public function addPromtionUser(PromtionUsers $promtionUser): static
+    public function addPromotionUser(PromotionUsers $promotionUser): static
     {
-        if (!$this->promtionUsers->contains($promtionUser)) {
-            $this->promtionUsers->add($promtionUser);
-            $promtionUser->setUserId($this);
+        if (!$this->promotionUsers->contains($promotionUser)) {
+            $this->promotionUsers->add($promotionUser);
+            $promotionUser->setUserId($this);
         }
 
         return $this;
     }
 
-    public function removePromtionUser(PromtionUsers $promtionUser): static
+    public function removePromotionUser(PromotionUsers $promotionUser): static
     {
-        if ($this->promtionUsers->removeElement($promtionUser)) {
+        if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promtionUser->getUserId() === $this) {
-                $promtionUser->setUserId(null);
+            if ($promotionUser->getUserId() === $this) {
+                $promotionUser->setUserId(null);
             }
         }
 
