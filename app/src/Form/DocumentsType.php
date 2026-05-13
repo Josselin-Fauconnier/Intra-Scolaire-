@@ -23,7 +23,7 @@ class DocumentsType extends AbstractType
                 'choice_label' => 'email', // C'est plus sympa d'afficher l'email que l'ID dans la liste
             ])
             ->add('attachment', FileType::class, [
-                'label' => 'Fichier du cours (PDF, Vidéo...)',
+                'label' => 'Fichier du cours (PDF)',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [

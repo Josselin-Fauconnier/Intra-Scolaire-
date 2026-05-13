@@ -1,34 +1,107 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Documents{% endblock %}
+{% block title %}Détails du Document{% endblock %}
 
 {% block body %}
-    <h1>Documents</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            {# En-tête avec bouton retour #}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 text-secondary mb-0">Détails du document</h1>
+                <a href="{{ path('app_documents_index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ document.id }}</td>
-            </tr>
-            <tr>
-                <th>Type</th>
-                <td>{{ document.type }}</td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td>{{ document.title }}</td>
-            </tr>
-            <tr>
-                <th>Path</th>
-                <td>{{ document.path }}</td>
-            </tr>
-        </tbody>
-    </table>
+            <div class="card shadow-sm border-0">
+                {# Header de la carte avec le titre du document #}
+                <div class="card-header bg-white border-bottom py-3">
+                    <h2 class="h5 mb-0 text-primary">{{ document.title }}</h2>
+                </div>
+                
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="ps-4 bg-light" style="width: 30%;">ID</th>
+                                <td class="ps-4">#{{ document.id }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 bg-light">Type de document</th>
+                                <td class="ps-4">
+                                    {# Badge dynamique pour le type #}
+                                    {% set typeValue = document.type.value|lower %}
+                                    {% set color = typeValue == 'pdf' ? '#e74c3c' : (typeValue == 'video' ? '#3498db' : '#6c757d') %}
+                                    <span class="badge" style="background-color: {{ color }}; font-size: 0.8rem; padding: 6px 12px;">
+                                        {{ typeValue|upper }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 bg-light">Titre complet</th>
+                                <td class="ps-4 fw-bold">{{ document.title }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-4 bg-light">Chemin d'accès (Path)</th>
+                                <td class="ps-4"><code class="text-muted">{{ document.path }}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-    <a href="{{ path('app_documents_index') }}">back to list</a>
+                {# Footer de la carte avec les actions alignées #}
+                <div class="card-footer bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        {# Groupe Modifier/Retour #}
+                        <div>
+                            <a href="{{ path('app_documents_edit', {'id': document.id}) }}" class="btn btn-warning px-4">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+                        </div>
 
-    <a href="{{ path('app_documents_edit', {'id': document.id}) }}">edit</a>
+                        {# Bouton supprimer isolé à droite #}
+                        <div class="delete-form-wrapper">
+                            {{ include('documents/_delete_form.html.twig') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    {{ include('documents/_delete_form.html.twig') }}
+{# Bootstrap Icons #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    body { background-color: #f4f7f6; }
+    
+    .card { border-radius: 10px; overflow: hidden; }
+    
+    /* On trace des lignes horizontales plus douces */
+    .table th, .table td {
+        padding: 1rem !important;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    /* Le th est légèrement grisé pour contraster avec la valeur */
+    .table th {
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    /* Style pour le formulaire de suppression afin qu'il ne crée pas de décalage */
+    .delete-form-wrapper form {
+        display: inline;
+        margin: 0;
+    }
+
+    /* Animation au survol du bouton retour */
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
 {% endblock %}
