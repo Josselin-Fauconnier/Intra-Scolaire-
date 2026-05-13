@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\PromtionUsers;
+use App\Entity\PromotionUsers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<PromtionUsers>
+ * @extends ServiceEntityRepository<PromotionUsers>
  */
-class PromtionUsersRepository extends ServiceEntityRepository
+class PromotionUsersRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, PromtionUsers::class);
+        parent::__construct($registry, promotionUsers::class);
     }
 
     //    /**
-    //     * @return PromtionUsers[] Returns an array of PromtionUsers objects
+    //     * @return promotionUsers[] Returns an array of promotionUsers objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class PromtionUsersRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?PromtionUsers
+    //    public function findOneBySomeField($value): ?promotionUsers
     //    {
     //        return $this->createQueryBuilder('p')
     //            ->andWhere('p.exampleField = :val')

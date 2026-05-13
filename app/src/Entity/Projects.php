@@ -18,7 +18,7 @@ class Projects
 
     #[ORM\ManyToOne(inversedBy: 'projects')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Promotions $prmotion_id = null;
+    private ?Promotions $promotion = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -53,12 +53,12 @@ class Projects
 
     public function getPrmotionId(): ?Promotions
     {
-        return $this->prmotion_id;
+        return $this->promotion;
     }
 
-    public function setPrmotionId(?Promotions $prmotion_id): static
+    public function setPrmotionId(?Promotions $promotion): static
     {
-        $this->prmotion_id = $prmotion_id;
+        $this->promotion = $promotion;
 
         return $this;
     }

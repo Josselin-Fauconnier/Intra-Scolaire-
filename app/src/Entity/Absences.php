@@ -15,10 +15,10 @@ class Absences
 
     #[ORM\ManyToOne(inversedBy: 'absences')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'absences')]
-    private ?Documents $document_id = null;
+    private ?Documents $document = null;
 
     #[ORM\Column]
     private ?\DateTime $start_date = null;
@@ -33,24 +33,24 @@ class Absences
 
     public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }
 
     public function getDocumentId(): ?Documents
     {
-        return $this->document_id;
+        return $this->document;
     }
 
-    public function setDocumentId(?Documents $document_id): static
+    public function setDocumentId(?Documents $document): static
     {
-        $this->document_id = $document_id;
+        $this->document = $document;
 
         return $this;
     }

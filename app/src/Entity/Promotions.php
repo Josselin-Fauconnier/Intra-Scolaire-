@@ -20,13 +20,13 @@ class Promotions
 
     #[ORM\ManyToOne(inversedBy: 'promotions')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $professor_id = null;
+    private ?User $professor = null;
 
     /**
-     * @var Collection<int, PromtionUsers>
+     * @var Collection<int, PromotionUsers>
      */
-    #[ORM\OneToMany(targetEntity: PromtionUsers::class, mappedBy: 'promotion_id')]
-    private Collection $promtionUsers;
+    #[ORM\OneToMany(targetEntity: PromotionUsers::class, mappedBy: 'promotion_id')]
+    private Collection $promotionUsers;
 
     /**
      * @var Collection<int, Projects>
@@ -36,7 +36,7 @@ class Promotions
 
     public function __construct()
     {
-        $this->promtionUsers = new ArrayCollection();
+        $this->promotionUsers = new ArrayCollection();
         $this->projects = new ArrayCollection();
     }
 
@@ -59,40 +59,40 @@ class Promotions
 
     public function getProfessorId(): ?User
     {
-        return $this->professor_id;
+        return $this->professor;
     }
 
-    public function setProfessorId(?User $professor_id): static
+    public function setProfessorId(?User $professor): static
     {
-        $this->professor_id = $professor_id;
+        $this->professor = $professor;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, PromtionUsers>
+     * @return Collection<int, PromotionUsers>
      */
-    public function getPromtionUsers(): Collection
+    public function getpromotionUsers(): Collection
     {
-        return $this->promtionUsers;
+        return $this->promotionUsers;
     }
 
-    public function addPromtionUser(PromtionUsers $promtionUser): static
+    public function addpromotionUser(promotionUsers $promotionUser): static
     {
-        if (!$this->promtionUsers->contains($promtionUser)) {
-            $this->promtionUsers->add($promtionUser);
-            $promtionUser->setPromotionId($this);
+        if (!$this->promotionUsers->contains($promotionUser)) {
+            $this->promotionUsers->add($promotionUser);
+            $promotionUser->setPromotionId($this);
         }
 
         return $this;
     }
 
-    public function removePromtionUser(PromtionUsers $promtionUser): static
+    public function removepromotionUser(promotionUsers $promotionUser): static
     {
-        if ($this->promtionUsers->removeElement($promtionUser)) {
+        if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promtionUser->getPromotionId() === $this) {
-                $promtionUser->setPromotionId(null);
+            if ($promotionUser->getPromotionId() === $this) {
+                $promotionUser->setPromotionId(null);
             }
         }
 
