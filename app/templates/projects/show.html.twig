@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block body %}
+    <h1>Projects</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ project.id }}</td>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <td>{{ project.title }}</td>
+            </tr>
+            <tr>
+                <th>Visibility</th>
+                <td>{{ project.visibility ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ project.description }}</td>
+            </tr>
+            <tr>
+                <th>Google_drive</th>
+                <td>{{ project.googleDrive }}</td>
+            </tr>
+            <tr>
+                <th>Due_date</th>
+                <td>{{ project.dueDate ? project.dueDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_projects_index') }}">back to list</a>
+
+    <a href="{{ path('app_projects_edit', {'id': project.id}) }}">edit</a>
+
+    {{ include('projects/_delete_form.html.twig') }}
+{% endblock %}
