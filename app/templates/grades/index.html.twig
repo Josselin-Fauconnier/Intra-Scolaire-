@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Grades index{% endblock %}
+
+{% block body %}
+    <h1>Grades index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Grade</th>
+                <th>Comments</th>
+                <th>Submission</th>
+                <th>Update_history</th>
+                <th>Status</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for grade in grades %}
+            <tr>
+                <td>{{ grade.id }}</td>
+                <td>{{ grade.grade }}</td>
+                <td>{{ grade.comments }}</td>
+                <td>{{ grade.submission }}</td>
+                <td>{{ grade.updateHistory ? grade.updateHistory|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ grade.status }}</td>
+                <td>
+                    <a href="{{ path('app_grades_show', {'id': grade.id}) }}">show</a>
+                    <a href="{{ path('app_grades_edit', {'id': grade.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_grades_new') }}">Create new</a>
+{% endblock %}
