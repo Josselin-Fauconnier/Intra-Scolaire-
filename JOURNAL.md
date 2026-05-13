@@ -145,3 +145,7 @@ $user->setEmail('prof@university.edu');
 $user->setRoles(['ROLE_TEACHER']); // This is an array'''
 
 J'ai aussi ajouté les enums (voir src/Enum).
+
+### 2026/05/13 - Amad 
+- php bin/console debug:router
+  
