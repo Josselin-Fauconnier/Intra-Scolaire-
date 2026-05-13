@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PromotionUsers index{% endblock %}
+
+{% block body %}
+    <h1>PromotionUsers index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Étudiant</th>
+                <th>Promotion</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for promotion_user in promotion_users %}
+            <tr>
+                <td>{{ promotion_user.id }}</td>
+                <td>{{ promotion_user.user.firstname }} {{ promotion_user.user.lastname }}</td>
+                <td>{{ promotion_user.promotion.name }}</td>
+                <td>
+                    <a href="{{ path('app_promotion_users_show', {'id': promotion_user.id}) }}">Voir</a>
+                    <a href="{{ path('app_promotion_users_edit', {'id': promotion_user.id}) }}">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Aucun étudiant assigné</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_promotion_users_new') }}">Create new</a>
+{% endblock %}
