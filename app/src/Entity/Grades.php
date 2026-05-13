@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\GradeStatus;
 use App\Repository\GradesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -33,6 +34,9 @@ class Grades
 
     #[ORM\Column]
     private ?\DateTime $update_history = null;
+
+    #[ORM\Column(enumType: GradeStatus::class)]
+    private ?GradeStatus $status = null;
 
     public function getId(): ?int
     {
@@ -107,6 +111,18 @@ class Grades
     public function setUpdateHistory(\DateTime $update_history): static
     {
         $this->update_history = $update_history;
+
+        return $this;
+    }
+
+    public function getStatus(): ?GradeStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(GradeStatus $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }
