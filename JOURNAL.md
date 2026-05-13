@@ -1,6 +1,6 @@
 # Historique des commandes Symfony utilisées:
 
-### 2026/05/06 - Cosmin
+### 2026/05/06 - Cosmin (deprecated, on a refait la DB)
 
 - php bin/console make:user
   - User (name)
@@ -19,7 +19,7 @@
 - php bin/console make:migration
 - php bin/console doctrine:migrations:migrate (yes)
 
-### 2026/05/07 - Cosmin
+### 2026/05/07 - Cosmin (deprecated, on a refait la DB)
 
 - php bin/console make:entity classes
   - name (string 255 no)
@@ -92,7 +92,7 @@
 - php bin/console make:migration
 - php bin/console doctrine:migrations:migrate
 
-### 2026/05/11 - Cosmin
+### 2026/05/11 - Cosmin (deprecated, on a refait la DB)
 
 J'ai supprimé 'le colonne "roles" du User et adapté la colonne "role" pout qu'elle correspond aux critéres de sécurité Symfony.
 
@@ -113,4 +113,35 @@ J'ai supprimé 'le colonne "roles" du User et adapté la colonne "role" pout qu'
 
 ### 2026/05/12 - Cosmin
 
-Je nettoie le projet pour refaire toutes la DB plus adapté au enseignement supérieur
+Je nettoie le projet pour refaire toutes la DB plus adapté au enseignement supérieur.
+On a refait une schéma DB.
+
+### 2026/05/13 - Cosmin
+
+Ajouté ROLE_STUDENT, ROLE_TEACHER et ROLE_ADMIN dans security.yaml.
+Pour les utiliser:
+
+- Controller:
+
+#[IsGranted('ROLE_TEACHER')]
+public function editExam(): Response
+{
+// Code
+}
+
+- Routes:
+  access_control: - { path: ^/admin, roles: ROLE_ADMIN } - { path: ^/teacher, roles: ROLE_TEACHER } - { path: ^/student, roles: ROLE_STUDENT } // dans le security.yaml
+
+- Twig:
+
+{% if is_granted('ROLE_ADMIN') %}
+<a href="/admin/settings">System Settings</a>
+{% endif %}
+
+Pour assigner un role dans le controller:
+
+'''$user = new User();
+$user->setEmail('prof@university.edu');
+$user->setRoles(['ROLE_TEACHER']); // This is an array'''
+
+J'ai aussi ajouté les enums (voir src/Enum).
