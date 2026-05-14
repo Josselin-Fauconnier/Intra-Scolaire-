@@ -203,3 +203,26 @@ Créé manuellement (pas de commande make: disponible) :
 - Ajout des types corrects pour les champs date (`DateTimeType`, `widget: single_text`), booléen (`CheckboxType`) et enum (`EnumType`) dans les FormType concernés
 
 - Mise à jour des templates `index.html.twig` pour afficher les relations (nom du prof, de l'étudiant, de la promo) au lieu de l'id brut
+
+### 2026/05/14 - Josselin
+
+Optimisation des performances Docker sur Windows (`docker-compose.yml`)
+
+**Problème** : Sur Windows, Docker monte les fichiers via un bind-mount NTFS → Linux, ce qui génère des I/O lentes. Les dossiers `vendor/` (milliers de fichiers Composer) et `var/` (cache Symfony) étaient particulièrement impactés, causant des temps de chargement de 30-40 secondes.
+
+**Solution appliquée** : Remplacement des bind-mounts par des volumes Docker natifs pour `vendor/` et `var/`.
+
+Modification dans `docker-compose.yml` :
+- Ajout du volume nommé `app_vendor` monté sur `/var/www/html/vendor`
+- Le volume `app_cache` existait déjà pour `/var/www/html/var`
+- Déclaration du volume `app_vendor` dans la section `volumes:` racine
+
+Ces volumes vivent dans le filesystem interne de Docker (Linux natif), sans synchronisation avec Windows, ce qui élimine la latence I/O.
+
+**À faire après un `git pull`** :
+```bash
+docker compose down
+docker compose up -d --build
+docker compose exec app composer install
+```
+Le `composer install` est obligatoire au premier démarrage pour peupler le volume `app_vendor` qui démarre vide.

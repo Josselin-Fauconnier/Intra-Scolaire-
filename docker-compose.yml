@@ -7,6 +7,7 @@ services:
       - ./app:/var/www/html
       - app_logs:/var/log/php
       - app_cache:/var/www/html/var
+      - app_vendor:/var/www/html/vendor
     networks:
       - symfony_network
 
@@ -63,4 +64,5 @@ volumes:
   phpmyadmin_data:
   app_logs:
   app_cache:
+  app_vendor:
   nginx_logs:
