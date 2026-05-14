@@ -27,6 +27,7 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_documents_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $document = new Documents();
@@ -75,6 +76,7 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_documents_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Documents $document, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(DocumentsType::class, $document);
@@ -113,6 +115,7 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_documents_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Documents $document, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->getPayload()->getString('_token'))) {

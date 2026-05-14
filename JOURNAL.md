@@ -217,7 +217,7 @@ Règles appliquées :
   tout utilisateur connecté (`ROLE_USER`) peut consulter, mais seul un prof (`ROLE_TEACHER`) peut créer, modifier ou supprimer.
 
 - `DocumentsController` :
-  tout utilisateur connecté peut tout faire (consulter, uploader, modifier).
+  tout utilisateur connecté peut consulter, mais seul un prof (`ROLE_TEACHER`) peut uploader, modifier ou supprimer.
 
 - `PromotionUsersController` (gestion des inscriptions en promotion) :
   seul un prof (`ROLE_TEACHER`) peut consulter, seul un admin (`ROLE_ADMIN`) peut modifier les inscriptions.
