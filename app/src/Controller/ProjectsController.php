@@ -10,8 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/projects')]
+#[IsGranted('ROLE_USER')]
 final class ProjectsController extends AbstractController
 {
     #[Route(name: 'app_projects_index', methods: ['GET'])]
@@ -23,6 +25,7 @@ final class ProjectsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_projects_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $project = new Projects();
@@ -51,6 +54,7 @@ final class ProjectsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_projects_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Projects $project, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ProjectsType::class, $project);
@@ -69,6 +73,7 @@ final class ProjectsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_projects_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Projects $project, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->getPayload()->getString('_token'))) {

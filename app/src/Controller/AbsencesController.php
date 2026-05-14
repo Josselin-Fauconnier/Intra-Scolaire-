@@ -10,8 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/absences')]
+#[IsGranted('ROLE_USER')]
 final class AbsencesController extends AbstractController
 {
     #[Route(name: 'app_absences_index', methods: ['GET'])]
@@ -23,6 +25,7 @@ final class AbsencesController extends AbstractController
     }
 
     #[Route('/new', name: 'app_absences_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $absence = new Absences();
@@ -51,6 +54,7 @@ final class AbsencesController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_absences_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(AbsencesType::class, $absence);
@@ -69,6 +73,7 @@ final class AbsencesController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_absences_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$absence->getId(), $request->getPayload()->getString('_token'))) {

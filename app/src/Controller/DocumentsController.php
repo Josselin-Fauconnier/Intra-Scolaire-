@@ -11,9 +11,11 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/documents')]
+#[IsGranted('ROLE_USER')]
 final class DocumentsController extends AbstractController
 {
     #[Route(name: 'app_documents_index', methods: ['GET'])]
@@ -32,22 +34,20 @@ final class DocumentsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // On récupère le fichier via le champ 'attachment' (non-mappé)
             $file = $form->get('attachment')->getData();
 
             if ($file) {
-                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                // On sécurise le nom du fichier
-                $safeFilename = $slugger->slug($originalFilename);
+                $allowedMimes = ['application/pdf', 'application/x-pdf'];
+                if (!in_array($file->getMimeType(), $allowedMimes, true)) {
+                    $this->addFlash('danger', 'Type de fichier non autorisé.');
+                    return $this->redirectToRoute('app_documents_new');
+                }
+
+                $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
-                    // On déplace le fichier dans le dossier configuré dans services.yaml
-                    $file->move(
-                        $this->getParameter('documents_directory'),
-                        $newFilename
-                    );
-                    // On remplit manuellement la propriété path de l'entité
+                    $file->move($this->getParameter('documents_directory'), $newFilename);
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de l'upload du fichier.");
@@ -84,13 +84,17 @@ final class DocumentsController extends AbstractController
             $file = $form->get('attachment')->getData();
 
             if ($file) {
-                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
+                $allowedMimes = ['application/pdf', 'application/x-pdf'];
+                if (!in_array($file->getMimeType(), $allowedMimes, true)) {
+                    $this->addFlash('danger', 'Type de fichier non autorisé.');
+                    return $this->redirectToRoute('app_documents_edit', ['id' => $document->getId()]);
+                }
+
+                $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                 try {
                     $file->move($this->getParameter('documents_directory'), $newFilename);
-                    // Mise à jour du chemin si un nouveau fichier est posté
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de la modification du fichier.");

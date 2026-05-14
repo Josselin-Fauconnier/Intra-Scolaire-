@@ -10,8 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/promotions')]
+#[IsGranted('ROLE_USER')]
 final class PromotionsController extends AbstractController
 {
     #[Route(name: 'app_promotions_index', methods: ['GET'])]
@@ -23,6 +25,7 @@ final class PromotionsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_promotions_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $promotion = new Promotions();
@@ -51,6 +54,7 @@ final class PromotionsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_promotions_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(PromotionsType::class, $promotion);
@@ -69,6 +73,7 @@ final class PromotionsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_promotions_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {

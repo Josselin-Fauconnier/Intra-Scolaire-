@@ -203,3 +203,32 @@ Créé manuellement (pas de commande make: disponible) :
 - Ajout des types corrects pour les champs date (`DateTimeType`, `widget: single_text`), booléen (`CheckboxType`) et enum (`EnumType`) dans les FormType concernés
 
 - Mise à jour des templates `index.html.twig` pour afficher les relations (nom du prof, de l'étudiant, de la promo) au lieu de l'id brut
+
+### 2026/05/14 - Josselin
+
+#### Contrôle d'accès par rôle
+
+Ajout de `#[IsGranted]` sur les 6 controllers CRUD qui n'avaient aucune restriction de rôle.
+Un utilisateur authentifié pouvait créer/modifier/supprimer des notes, promotions, projets, etc.
+
+Règles appliquées :
+
+| Controller | Niveau classe | `new` / `edit` / `delete` |
+|---|---|---|
+| `GradesController` | `ROLE_USER` | `ROLE_TEACHER` |
+| `ProjectsController` | `ROLE_USER` | `ROLE_TEACHER` |
+| `PromotionsController` | `ROLE_USER` | `ROLE_TEACHER` |
+| `AbsencesController` | `ROLE_USER` | `ROLE_TEACHER` |
+| `DocumentsController` | `ROLE_USER` | `ROLE_USER` |
+| `PromotionUsersController` | `ROLE_TEACHER` | `ROLE_ADMIN` |
+
+Fichiers modifiés : `GradesController.php`, `ProjectsController.php`, `PromotionsController.php`, `AbsencesController.php`, `DocumentsController.php`, `PromotionUsersController.php`
+
+####  Validation MIME des fichiers uploadés
+
+Ajout d'une vérification `getMimeType()` côté controller dans les actions `new` et `edit` de `DocumentsController`.
+`getMimeType()` lit les magic bytes du fichier — impossible à contourner côté client, contrairement à l'extension ou au Content-Type déclaré.
+
+Fichiers modifiés : `DocumentsController.php`
+
+
