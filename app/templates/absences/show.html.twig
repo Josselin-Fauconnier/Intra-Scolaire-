@@ -1,30 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Absences{% endblock %}
+{% block title %}Détail absence{% endblock %}
 
 {% block body %}
-    <h1>Absences</h1>
+<turbo-frame id="main-frame">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Détail de l'absence</h2>
+        <a href="{{ path('app_absences_index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
 
     <table class="table">
         <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ absence.id }}</td>
-            </tr>
-            <tr>
-                <th>Start_date</th>
-                <td>{{ absence.startDate ? absence.startDate|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>End_date</th>
-                <td>{{ absence.endDate ? absence.endDate|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
+            <tr><th>ID</th><td>{{ absence.id }}</td></tr>
+            <tr><th>Début</th><td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td></tr>
+            <tr><th>Fin</th><td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td></tr>
         </tbody>
     </table>
 
-    <a href="{{ path('app_absences_index') }}">back to list</a>
-
-    <a href="{{ path('app_absences_edit', {'id': absence.id}) }}">edit</a>
-
-    {{ include('absences/_delete_form.html.twig') }}
+    {% if is_granted('ROLE_TEACHER') %}
+        <a href="{{ path('app_absences_edit', {'id': absence.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+        {{ include('absences/_delete_form.html.twig') }}
+    {% endif %}
+</turbo-frame>
 {% endblock %}

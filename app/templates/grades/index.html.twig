@@ -3,18 +3,24 @@
 {% block title %}Grades index{% endblock %}
 
 {% block body %}
-    <h1>Grades index</h1>
+<turbo-frame id="main-frame">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Notes</h2>
+        {% if is_granted('ROLE_TEACHER') %}
+            <a href="{{ path('app_grades_new') }}" class="btn btn-success btn-sm">+ Nouvelle note</a>
+        {% endif %}
+    </div>
 
-    <table class="table">
+    <table class="table table-hover">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Grade</th>
-                <th>Comments</th>
-                <th>Submission</th>
-                <th>Update_history</th>
-                <th>Status</th>
-                <th>actions</th>
+                <th>ID</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Soumission</th>
+                <th>Mise à jour</th>
+                <th>Statut</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -24,20 +30,21 @@
                 <td>{{ grade.grade }}</td>
                 <td>{{ grade.comments }}</td>
                 <td>{{ grade.submission }}</td>
-                <td>{{ grade.updateHistory ? grade.updateHistory|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
                 <td>{{ grade.status }}</td>
                 <td>
-                    <a href="{{ path('app_grades_show', {'id': grade.id}) }}">show</a>
-                    <a href="{{ path('app_grades_edit', {'id': grade.id}) }}">edit</a>
+                    <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                    {% if is_granted('ROLE_TEACHER') %}
+                        <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="7">no records found</td>
+                <td colspan="7" class="text-center text-muted py-4">Aucune note enregistrée.</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ path('app_grades_new') }}">Create new</a>
+</turbo-frame>
 {% endblock %}
