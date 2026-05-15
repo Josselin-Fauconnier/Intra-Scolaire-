@@ -6,6 +6,7 @@ use App\Entity\Documents;
 use App\Form\DocumentsType;
 use App\Repository\DocumentsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,11 +19,24 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[IsGranted('ROLE_USER')]
 final class DocumentsController extends AbstractController
 {
-    #[Route(name: 'app_documents_index', methods: ['GET'])]
-    public function index(DocumentsRepository $documentsRepository): Response
+    /**
+     * Index avec Pagination
+     */
+    #[Route('', name: 'app_documents_index', methods: ['GET'])]
+    public function index(DocumentsRepository $documentsRepository, PaginatorInterface $paginator, Request $request): Response
     {
+        $query = $documentsRepository->createQueryBuilder('d')
+            ->orderBy('d.id', 'DESC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            5 // 5 documents par page
+        );
+
         return $this->render('documents/index.html.twig', [
-            'documents' => $documentsRepository->findAll(),
+            'documents' => $pagination,
         ]);
     }
 
@@ -38,12 +52,6 @@ final class DocumentsController extends AbstractController
             $file = $form->get('attachment')->getData();
 
             if ($file) {
-                $allowedMimes = ['application/pdf', 'application/x-pdf'];
-                if (!in_array($file->getMimeType(), $allowedMimes, true)) {
-                    $this->addFlash('danger', 'Type de fichier non autorisé.');
-                    return $this->redirectToRoute('app_documents_new');
-                }
-
                 $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
@@ -55,24 +63,22 @@ final class DocumentsController extends AbstractController
                 }
             }
 
+            // Sécurité : on force l'utilisateur actuel si non défini dans le formulaire
+            if (!$document->getUser()) {
+                $document->setUser($this->getUser());
+            }
+
             $entityManager->persist($document);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_documents_index', [], Response::HTTP_SEE_OTHER);
         }
 
+        // IMPORTANT : Code 422 si le formulaire est invalide pour que Turbo affiche les erreurs
         return $this->render('documents/new.html.twig', [
             'document' => $document,
             'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_documents_show', methods: ['GET'])]
-    public function show(Documents $document): Response
-    {
-        return $this->render('documents/show.html.twig', [
-            'document' => $document,
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/{id}/edit', name: 'app_documents_edit', methods: ['GET', 'POST'])]
@@ -86,12 +92,6 @@ final class DocumentsController extends AbstractController
             $file = $form->get('attachment')->getData();
 
             if ($file) {
-                $allowedMimes = ['application/pdf', 'application/x-pdf'];
-                if (!in_array($file->getMimeType(), $allowedMimes, true)) {
-                    $this->addFlash('danger', 'Type de fichier non autorisé.');
-                    return $this->redirectToRoute('app_documents_edit', ['id' => $document->getId()]);
-                }
-
                 $safeFilename = $slugger->slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
@@ -99,18 +99,25 @@ final class DocumentsController extends AbstractController
                     $file->move($this->getParameter('documents_directory'), $newFilename);
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('danger', "Erreur lors de la modification du fichier.");
+                    $this->addFlash('danger', "Erreur lors de la modification.");
                 }
             }
 
             $entityManager->flush();
-
             return $this->redirectToRoute('app_documents_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('documents/edit.html.twig', [
             'document' => $document,
             'form' => $form,
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
+    }
+
+    #[Route('/{id}', name: 'app_documents_show', methods: ['GET'])]
+    public function show(Documents $document): Response
+    {
+        return $this->render('documents/show.html.twig', [
+            'document' => $document,
         ]);
     }
 
