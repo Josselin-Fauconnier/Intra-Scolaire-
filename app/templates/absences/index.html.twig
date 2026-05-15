@@ -11,34 +11,38 @@
         {% endif %}
     </div>
 
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Début</th>
-                <th>Fin</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for absence in absences %}
-            <tr>
-                <td>{{ absence.id }}</td>
-                <td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td>
-                <td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td>
-                <td>
-                    <a href="{{ path('app_absences_show', {'id': absence.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
-                    {% if is_granted('ROLE_TEACHER') %}
-                        <a href="{{ path('app_absences_edit', {'id': absence.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4" class="text-center text-muted py-4">Aucune absence enregistrée.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="responsive-table-wrapper">
+        <table class="table table-hover responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Debut</th>
+                    <th>Fin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for absence in absences %}
+                <tr>
+                    <td data-label="ID">{{ absence.id }}</td>
+                    <td data-label="Debut">{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td>
+                    <td data-label="Fin">{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td>
+                    <td data-label="Actions">
+                        <div class="table-actions">
+                            <a href="{{ path('app_absences_show', {'id': absence.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                            {% if is_granted('ROLE_TEACHER') %}
+                                <a href="{{ path('app_absences_edit', {'id': absence.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="table-empty-row">
+                    <td colspan="4" class="table-empty-state">Aucune absence enregistree.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </turbo-frame>
 {% endblock %}

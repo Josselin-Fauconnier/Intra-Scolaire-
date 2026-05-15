@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard — {{ user.firstname }} {{ user.lastname }}{% endblock %}
+{% block title %}Dashboard - {{ user.firstname }} {{ user.lastname }}{% endblock %}
 
 {% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/index.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
 {% endblock %}
 
 {% block body %}
 <div class="dashboard-layout">
-
-    {# ── Sidebar ── #}
     <nav class="sidebar">
         <div class="sidebar-header">
             <span class="app-name">Intra Scolaire</span>
@@ -17,7 +17,7 @@
             <span class="user-role">
                 {% if is_granted('ROLE_ADMIN') %}Administrateur
                 {% elseif is_granted('ROLE_TEACHER') %}Professeur
-                {% else %}Étudiant{% endif %}
+                {% else %}Etudiant{% endif %}
             </span>
         </div>
 
@@ -27,65 +27,75 @@
             <li>
                 <a href="{{ path('app_promotions_index') }}"
                    class="sidebar-link"
+                   aria-label="Promotions"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-mortarboard"></i> Promotions
+                    <i class="bi bi-mortarboard"></i>
+                    <span>Promotions</span>
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_absences_index') }}"
                    class="sidebar-link"
+                   aria-label="Absences"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-calendar-x"></i> Absences
+                    <i class="bi bi-calendar-x"></i>
+                    <span>Absences</span>
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_grades_index') }}"
                    class="sidebar-link"
+                   aria-label="Notes"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-clipboard-check"></i> Notes
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Notes</span>
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_documents_index') }}"
                    class="sidebar-link"
+                   aria-label="Documents"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-file-earmark-text"></i> Documents
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Documents</span>
                 </a>
             </li>
             <li>
                 <a href="{{ path('app_projects_index') }}"
                    class="sidebar-link"
+                   aria-label="Projets"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-kanban"></i> Projets
+                    <i class="bi bi-kanban"></i>
+                    <span>Projets</span>
                 </a>
             </li>
 
             {% if is_granted('ROLE_ADMIN') %}
-            <li class="nav-section" style="margin-top: 8px;">Administration</li>
+            <li class="nav-section">Administration</li>
             <li>
                 <a href="{{ path('app_promotion_users_index') }}"
                    class="sidebar-link"
+                   aria-label="Membres"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-people"></i> Membres
+                    <i class="bi bi-people"></i>
+                    <span>Membres</span>
                 </a>
             </li>
             {% endif %}
         </ul>
 
         <div class="sidebar-footer">
-            <a href="{{ logout_path() }}">
-                <i class="bi bi-box-arrow-left"></i> Déconnexion
+            <a href="{{ logout_path() }}" aria-label="Deconnexion">
+                <i class="bi bi-box-arrow-left"></i>
             </a>
         </div>
     </nav>
 
-    {# ── Contenu principal ── #}
     <main class="main-content">
         <turbo-frame id="main-frame" src="{{ path('app_promotions_index') }}">
             <div class="loading-placeholder">Chargement...</div>
         </turbo-frame>
     </main>
-
 </div>
 
 <script>
@@ -93,18 +103,19 @@
         const links = document.querySelectorAll('.sidebar-link');
 
         function setActive(link) {
-            links.forEach(l => l.classList.remove('active'));
+            links.forEach((item) => item.classList.remove('active'));
             link.classList.add('active');
         }
 
-        links.forEach(link => {
+        links.forEach((link) => {
             link.addEventListener('click', function () {
                 setActive(this);
             });
         });
 
-        // Active le premier lien par défaut
-        if (links.length > 0) links[0].classList.add('active');
+        if (links.length > 0) {
+            links[0].classList.add('active');
+        }
     });
 </script>
 {% endblock %}

@@ -11,34 +11,38 @@
         {% endif %}
     </div>
 
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Étudiant</th>
-                <th>Promotion</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for promotion_user in promotion_users %}
-            <tr>
-                <td>{{ promotion_user.id }}</td>
-                <td>{{ promotion_user.user.firstname }} {{ promotion_user.user.lastname }}</td>
-                <td>{{ promotion_user.promotion.name }}</td>
-                <td>
-                    <a href="{{ path('app_promotion_users_show', {'id': promotion_user.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_promotion_users_edit', {'id': promotion_user.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4" class="text-center text-muted py-4">Aucun étudiant assigné.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="responsive-table-wrapper">
+        <table class="table table-hover responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Etudiant</th>
+                    <th>Promotion</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for promotion_user in promotion_users %}
+                <tr>
+                    <td data-label="ID">{{ promotion_user.id }}</td>
+                    <td data-label="Etudiant">{{ promotion_user.user.firstname }} {{ promotion_user.user.lastname }}</td>
+                    <td data-label="Promotion">{{ promotion_user.promotion.name }}</td>
+                    <td data-label="Actions">
+                        <div class="table-actions">
+                            <a href="{{ path('app_promotion_users_show', {'id': promotion_user.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('app_promotion_users_edit', {'id': promotion_user.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="table-empty-row">
+                    <td colspan="4" class="table-empty-state">Aucun etudiant assigne.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </turbo-frame>
 {% endblock %}

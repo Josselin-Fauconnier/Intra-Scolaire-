@@ -11,40 +11,44 @@
         {% endif %}
     </div>
 
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Note</th>
-                <th>Commentaire</th>
-                <th>Soumission</th>
-                <th>Mise à jour</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for grade in grades %}
-            <tr>
-                <td>{{ grade.id }}</td>
-                <td>{{ grade.grade }}</td>
-                <td>{{ grade.comments }}</td>
-                <td>{{ grade.submission }}</td>
-                <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
-                <td>{{ grade.status }}</td>
-                <td>
-                    <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
-                    {% if is_granted('ROLE_TEACHER') %}
-                        <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7" class="text-center text-muted py-4">Aucune note enregistrée.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="responsive-table-wrapper">
+        <table class="table table-hover responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                    <th>Soumission</th>
+                    <th>Mise a jour</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for grade in grades %}
+                <tr>
+                    <td data-label="ID">{{ grade.id }}</td>
+                    <td data-label="Note">{{ grade.grade }}</td>
+                    <td data-label="Commentaire">{{ grade.comments }}</td>
+                    <td data-label="Soumission">{{ grade.submission }}</td>
+                    <td data-label="Mise a jour">{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
+                    <td data-label="Statut">{{ grade.status }}</td>
+                    <td data-label="Actions">
+                        <div class="table-actions">
+                            <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                            {% if is_granted('ROLE_TEACHER') %}
+                                <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="table-empty-row">
+                    <td colspan="7" class="table-empty-state">Aucune note enregistree.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </turbo-frame>
 {% endblock %}
