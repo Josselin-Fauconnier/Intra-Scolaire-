@@ -18,7 +18,7 @@
             <tr><th>Commentaire</th><td>{{ grade.comments }}</td></tr>
             <tr><th>Soumission</th><td>{{ grade.submission }}</td></tr>
             <tr><th>Mise à jour</th><td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td></tr>
-            <tr><th>Statut</th><td>{{ grade.status }}</td></tr>
+            <tr><th>Statut</th><td>{{ grade.status.value }}</td></tr>
         </tbody>
     </table>
 

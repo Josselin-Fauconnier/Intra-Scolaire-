@@ -31,7 +31,7 @@
                 <td>{{ grade.comments }}</td>
                 <td>{{ grade.submission }}</td>
                 <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
-                <td>{{ grade.status }}</td>
+                <td>{{ grade.status.value }}</td>
                 <td>
                     <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
                     {% if is_granted('ROLE_TEACHER') %}
