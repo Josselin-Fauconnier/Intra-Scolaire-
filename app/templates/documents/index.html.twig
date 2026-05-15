@@ -52,18 +52,18 @@
 {% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    {# En-tête de page #}
+<turbo-frame id="main-frame">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 text-primary">
-            <i class="bi bi-journal-bookmark-fill"></i> Liste des documents
-        </h1>
-        <a href="{{ path('app_documents_new') }}" class="btn btn-success shadow-sm">
-            <i class="bi bi-plus-lg"></i> Ajouter un document
-        </a>
+        <h2 class="text-primary">
+            <i class="bi bi-journal-bookmark-fill"></i> Documents
+        </h2>
+        {% if is_granted('ROLE_TEACHER') %}
+            <a href="{{ path('app_documents_new') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> Ajouter un document
+            </a>
+        {% endif %}
     </div>
 
-    {# Conteneur du tableau #}
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <table class="table table-hover table-bordered mb-0">
@@ -72,8 +72,8 @@
                         <th class="ps-4">ID</th>
                         <th>Type</th>
                         <th>Titre</th>
-                        <th>Nom du fichier</th>
-                        <th colspan="3" class="text-center">Actions</th>
+                        <th>Fichier</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,54 +82,33 @@
                         <td class="ps-4 text-muted">#{{ document.id }}</td>
                         <td>
                             {% set typeValue = document.type.value|default('inconnu')|lower %}
-                            {% set color = '#6c757d' %}
-                            {% if typeValue == 'pdf' %}
-                                {% set color = '#e74c3c' %}
-                            {% elseif typeValue == 'video' %}
-                                {% set color = '#3498db' %}
-                            {% endif %}
-
-                            <span class="type-tag" style="background-color: {{ color }};">
-                                {{ typeValue }}
-                            </span>
+                            {% set color = typeValue == 'pdf' ? '#e74c3c' : (typeValue == 'video' ? '#3498db' : '#6c757d') %}
+                            <span class="type-tag" style="background-color: {{ color }};">{{ typeValue }}</span>
                         </td>
                         <td class="fw-bold">{{ document.title }}</td>
-                        <td>
-                            <code class="small text-muted">{{ document.path|default('Aucun chemin') }}</code>
-                        </td>
+                        <td><code class="small text-muted">{{ document.path|default('—') }}</code></td>
                         <td class="text-center">
-                             <a href="{{ path('app_documents_show', {'id': document.id}) }}" class="btn btn-outline-info btn-sm">
-                                Voir
-                            </a>
-                        </td>
-                        <td class="text-center">
-                            <a href="{{ path('app_documents_edit', {'id': document.id}) }}" class="btn btn-outline-warning btn-sm">
-                                Modifier
-                            </a>
-                        </td>
-                        <td class="text-center">
+                            <a href="{{ path('app_documents_show', {'id': document.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
                             {% if document.path %}
-                                <a href="{{ asset('uploads/documents/' ~ document.path) }}" 
-                                   class="btn btn-outline-primary btn-sm" 
+                                <a href="{{ asset('uploads/documents/' ~ document.path) }}"
+                                   class="btn btn-outline-primary btn-sm"
                                    download="{{ document.title }}">
                                     <i class="bi bi-download"></i> Télécharger
                                 </a>
-                            {% else %}
-                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                            {% if is_granted('ROLE_TEACHER') %}
+                                <a href="{{ path('app_documents_edit', {'id': document.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        {# Correction du colspan : 4 colonnes de données + 3 d'actions = 7 #}
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            <p class="mb-0">Aucun document enregistré pour le moment.</p>
-                        </td>
+                        <td colspan="5" class="text-center py-5 text-muted">Aucun document enregistré.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div>
+</turbo-frame>
 {% endblock %}

@@ -3,35 +3,42 @@
 {% block title %}Absences index{% endblock %}
 
 {% block body %}
-    <h1>Absences index</h1>
+<turbo-frame id="main-frame">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Absences</h2>
+        {% if is_granted('ROLE_TEACHER') %}
+            <a href="{{ path('app_absences_new') }}" class="btn btn-success btn-sm">+ Nouvelle absence</a>
+        {% endif %}
+    </div>
 
-    <table class="table">
+    <table class="table table-hover">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Start_date</th>
-                <th>End_date</th>
-                <th>actions</th>
+                <th>ID</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for absence in absences %}
             <tr>
                 <td>{{ absence.id }}</td>
-                <td>{{ absence.startDate ? absence.startDate|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ absence.endDate ? absence.endDate|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td>
+                <td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td>
                 <td>
-                    <a href="{{ path('app_absences_show', {'id': absence.id}) }}">show</a>
-                    <a href="{{ path('app_absences_edit', {'id': absence.id}) }}">edit</a>
+                    <a href="{{ path('app_absences_show', {'id': absence.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                    {% if is_granted('ROLE_TEACHER') %}
+                        <a href="{{ path('app_absences_edit', {'id': absence.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="4">no records found</td>
+                <td colspan="4" class="text-center text-muted py-4">Aucune absence enregistrée.</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ path('app_absences_new') }}">Create new</a>
+</turbo-frame>
 {% endblock %}

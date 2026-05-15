@@ -1,17 +1,110 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello {{ user.lastname }}!{% endblock %}
+{% block title %}Dashboard — {{ user.firstname }} {{ user.lastname }}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="dashboard-layout">
 
-<div class="example-wrapper">
-    <h1>Hello {{ user.firstname }} {{ user.lastname }}! </h1>
+    {# ── Sidebar ── #}
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <span class="app-name">Intra Scolaire</span>
+            <span class="user-name">{{ user.firstname }} {{ user.lastname }}</span>
+            <span class="user-role">
+                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_TEACHER') %}Professeur
+                {% else %}Étudiant{% endif %}
+            </span>
+        </div>
 
-    <a href="{{ logout_path()}}">Logout</a>
-    
+        <ul class="sidebar-nav">
+            <li class="nav-section">Navigation</li>
+
+            <li>
+                <a href="{{ path('app_promotions_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-mortarboard"></i> Promotions
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_absences_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-calendar-x"></i> Absences
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_grades_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-clipboard-check"></i> Notes
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_documents_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-file-earmark-text"></i> Documents
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_projects_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-kanban"></i> Projets
+                </a>
+            </li>
+
+            {% if is_granted('ROLE_ADMIN') %}
+            <li class="nav-section" style="margin-top: 8px;">Administration</li>
+            <li>
+                <a href="{{ path('app_promotion_users_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-people"></i> Membres
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="{{ logout_path() }}">
+                <i class="bi bi-box-arrow-left"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    {# ── Contenu principal ── #}
+    <main class="main-content">
+        <turbo-frame id="main-frame" src="{{ path('app_promotions_index') }}">
+            <div class="loading-placeholder">Chargement...</div>
+        </turbo-frame>
+    </main>
+
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const links = document.querySelectorAll('.sidebar-link');
+
+        function setActive(link) {
+            links.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        }
+
+        links.forEach(link => {
+            link.addEventListener('click', function () {
+                setActive(this);
+            });
+        });
+
+        // Active le premier lien par défaut
+        if (links.length > 0) links[0].classList.add('active');
+    });
+</script>
 {% endblock %}
