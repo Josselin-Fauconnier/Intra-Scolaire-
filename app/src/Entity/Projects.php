@@ -21,13 +21,13 @@ class Projects
     private ?Promotions $promotion = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private string $title = '';
 
     #[ORM\Column]
-    private ?bool $visibility = null;
+    private bool $visibility = False;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $google_drive = null;
