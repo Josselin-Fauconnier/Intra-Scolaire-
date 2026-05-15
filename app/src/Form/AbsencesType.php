@@ -25,11 +25,13 @@ class AbsencesType extends AbstractType
             ->add('user', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
+                'property_path' => 'userId',
             ])
             ->add('document', EntityType::class, [
                 'class' => Documents::class,
                 'choice_label' => 'title',
                 'required' => false,
+                'property_path' => 'documentId',
             ])
         ;
     }

@@ -24,8 +24,8 @@
         {% for promotion_user in promotion_users %}
             <tr>
                 <td>{{ promotion_user.id }}</td>
-                <td>{{ promotion_user.user.firstname }} {{ promotion_user.user.lastname }}</td>
-                <td>{{ promotion_user.promotion.name }}</td>
+                <td>{{ promotion_user.userId.firstname }} {{ promotion_user.userId.lastname }}</td>
+                <td>{{ promotion_user.promotionId.name }}</td>
                 <td>
                     <a href="{{ path('app_promotion_users_show', {'id': promotion_user.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
                     {% if is_granted('ROLE_ADMIN') %}

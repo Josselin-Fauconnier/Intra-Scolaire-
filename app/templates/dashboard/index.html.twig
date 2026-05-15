@@ -24,6 +24,7 @@
         <ul class="sidebar-nav">
             <li class="nav-section">Navigation</li>
 
+            {% if is_granted('ROLE_ADMIN') %}
             <li>
                 <a href="{{ path('app_promotions_index') }}"
                    class="sidebar-link"
@@ -31,6 +32,7 @@
                     <i class="bi bi-mortarboard"></i> Promotions
                 </a>
             </li>
+            {% endif %}
             <li>
                 <a href="{{ path('app_absences_index') }}"
                    class="sidebar-link"

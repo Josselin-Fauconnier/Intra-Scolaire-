@@ -25,7 +25,7 @@
             <tr>
                 <td>{{ promotion.id }}</td>
                 <td>{{ promotion.name }}</td>
-                <td>{{ promotion.professor.firstname }} {{ promotion.professor.lastname }}</td>
+                <td>{{ promotion.professorId.firstname }} {{ promotion.professorId.lastname }}</td>
                 <td>
                     <a href="{{ path('app_promotions_show', {'id': promotion.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
                     {% if is_granted('ROLE_TEACHER') %}

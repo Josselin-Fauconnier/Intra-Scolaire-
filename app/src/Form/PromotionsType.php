@@ -18,6 +18,7 @@ class PromotionsType extends AbstractType
             ->add('professor', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
+                'property_path' => 'professorId',
             ])
         ;
     }
