@@ -76,7 +76,7 @@ final class ProjectsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Projects $project, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($project);
             $entityManager->flush();
         }

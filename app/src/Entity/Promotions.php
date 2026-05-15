@@ -6,8 +6,10 @@ use App\Repository\PromotionsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: PromotionsRepository::class)]
+#[UniqueEntity('name', message: "Cette promotion existe déjà")]
 class Promotions
 {
     #[ORM\Id]
@@ -16,7 +18,7 @@ class Promotions
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name = '';
 
     #[ORM\ManyToOne(inversedBy: 'promotions')]
     #[ORM\JoinColumn(nullable: false)]
