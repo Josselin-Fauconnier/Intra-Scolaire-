@@ -19,8 +19,18 @@ final class AbsencesController extends AbstractController
     #[Route(name: 'app_absences_index', methods: ['GET'])]
     public function index(AbsencesRepository $absencesRepository): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $absences = $absencesRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $absences = $absencesRepository->findByTeacher($user);
+        } else {
+            $absences = $absencesRepository->findByStudent($user);
+        }
+
         return $this->render('absences/index.html.twig', [
-            'absences' => $absencesRepository->findAll(),
+            'absences' => $absences,
         ]);
     }
 

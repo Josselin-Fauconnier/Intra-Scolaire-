@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Grades;
 use App\Entity\Projects;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -33,6 +34,10 @@ class GradesType extends AbstractType
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
                 'property_path' => 'studentId',
+                'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
+                    ->where('u.roles LIKE :role')
+                    ->setParameter('role', '%ROLE_STUDENT%')
+                    ->orderBy('u.lastname', 'ASC'),
             ])
         ;
     }

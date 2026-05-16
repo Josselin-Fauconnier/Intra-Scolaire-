@@ -19,8 +19,18 @@ final class PromotionsController extends AbstractController
     #[Route(name: 'app_promotions_index', methods: ['GET'])]
     public function index(PromotionsRepository $promotionsRepository): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $promotions = $promotionsRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $promotions = $promotionsRepository->findByTeacher($user);
+        } else {
+            $promotions = $promotionsRepository->findByStudent($user);
+        }
+
         return $this->render('promotions/index.html.twig', [
-            'promotions' => $promotionsRepository->findAll(),
+            'promotions' => $promotions,
         ]);
     }
 
@@ -57,6 +67,10 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres promotions.');
+        }
+
         $form = $this->createForm(PromotionsType::class, $promotion);
         $form->handleRequest($request);
 
@@ -76,6 +90,10 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres promotions.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotion);
             $entityManager->flush();

@@ -19,8 +19,18 @@ final class GradesController extends AbstractController
     #[Route(name: 'app_grades_index', methods: ['GET'])]
     public function index(GradesRepository $gradesRepository): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $grades = $gradesRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $grades = $gradesRepository->findByTeacher($user);
+        } else {
+            $grades = $gradesRepository->findByStudent($user);
+        }
+
         return $this->render('grades/index.html.twig', [
-            'grades' => $gradesRepository->findAll(),
+            'grades' => $grades,
         ]);
     }
 

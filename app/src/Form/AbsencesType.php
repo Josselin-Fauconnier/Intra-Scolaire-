@@ -5,11 +5,12 @@ namespace App\Form;
 use App\Entity\Absences;
 use App\Entity\Documents;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use \Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 class AbsencesType extends AbstractType
 {
@@ -27,6 +28,10 @@ class AbsencesType extends AbstractType
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
                 'property_path' => 'userId',
+                'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
+                    ->where('u.roles LIKE :role')
+                    ->setParameter('role', '%ROLE_STUDENT%')
+                    ->orderBy('u.lastname', 'ASC'),
             ])
             ->add('document', EntityType::class, [
                 'class' => Documents::class,

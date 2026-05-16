@@ -255,15 +255,15 @@ Le `composer install` est obligatoire au premier démarrage pour peupler le volu
 
 ### 2026/05/16 - Josselin
 
-#### Correction de 5 bugs détectés par analyse statique du code
 
-**BUG-01 — `User.addDocument()` / `removeDocument()` appelaient des méthodes inexistantes**
+
+**Correct-1 — `User.addDocument()` / `removeDocument()` appelaient des méthodes inexistantes**
 
 `User.php` appelait `$document->setUserId()` et `getUserId()` alors que l'entité `Documents` avait été refactorée pour exposer `setUser()` / `getUser()`. Correction dans les deux méthodes.
 
 Fichier modifié : `src/Entity/User.php`
 
-**BUG-02 — `Grades.update_history` : colonne NOT NULL remplie manuellement via le form**
+**Correct-2 — `Grades.update_history` : colonne NOT NULL remplie manuellement via le form**
 
 La colonne `update_history` est non-nullable en base (`#[ORM\Column]` sans `nullable: true`) mais le champ était exposé dans `GradesType` avec `required: false`. Soumettre le formulaire sans le remplir provoquait une erreur DB.
 
@@ -274,20 +274,47 @@ Correction :
 
 Fichiers modifiés : `src/Form/GradesType.php`, `src/Controller/GradesController.php`
 
-**BUG-03 — Typo `getPrmotionId()` / `setPrmotionId()` propagée sur 3 fichiers**
+**Correct-3 — Typo `getPrmotionId()` / `setPrmotionId()` propagée sur 3 fichiers**
 
 Un "o" manquant dans "Promotion" lors de la génération make:crud. Renommé en `getPromotionId()` / `setPromotionId()` et mis à jour partout.
 
 Fichiers modifiés : `src/Entity/Projects.php`, `src/Entity/Promotions.php`, `src/Form/ProjectsType.php`
 
-**BUG-04 — Mapping Doctrine invalide sur `Absences.document`**
+**Correct-4 — Mapping Doctrine sur `Absences.document`**
 
 `Absences.php` déclarait `inversedBy: 'absences'` sur la relation vers `Documents`, mais `Documents` n'a pas de collection `$absences`. Mapping invalide pouvant causer une `MappingException` Doctrine. Remplacé par une relation unidirectionnelle (suppression de `inversedBy`).
 
 Fichier modifié : `src/Entity/Absences.php`
 
-**BUG-05 — `AbsencesType.end_date` manquait `'widget' => 'single_text'`**
+**Correct-5 — `AbsencesType.end_date` manquait `'widget' => 'single_text'`**
 
 `start_date` utilisait `widget: single_text` (un seul `<input type="datetime-local">`) mais `end_date` ne le précisait pas, ce qui rendait cinq `<select>` séparés. Rendu incohérent corrigé.
 
 Fichier modifié : `src/Form/AbsencesType.php`
+
+
+
+**Correct-6 — Filtrage des données par rôle dans les listes**
+
+Les index de Grades, Absences, Projects et Promotions appelaient `findAll()` sans restriction : un étudiant voyait les notes et absences de tous les autres utilisateurs.
+
+Ajout de méthodes filtrées dans les repositories :
+- `findByStudent(User)` : retourne uniquement les données liées à l'utilisateur connecté
+- `findByTeacher(User)` : retourne uniquement les données des promotions dont l'utilisateur est professeur
+- `findAll()` reste utilisé pour les admins uniquement
+
+Logique ajoutée dans les controllers : ROLE_ADMIN → tout, ROLE_TEACHER → ses données, autre → ses données personnelles.
+
+Fichiers modifiés : `src/Repository/GradesRepository.php`, `src/Repository/AbsencesRepository.php`, `src/Repository/ProjectsRepository.php`, `src/Repository/PromotionsRepository.php`, `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`
+
+**Correct-07 — Vérification d'appartenance sur les promotions**
+
+N'importe quel professeur pouvait modifier ou supprimer la promotion d'un autre prof en changeant l'ID dans l'URL. Ajout d'un contrôle d'appartenance dans `edit()` et `delete()` de `PromotionsController` : si l'utilisateur n'est pas admin et n'est pas le professeur de la promotion, une exception 403 est levée.
+
+Fichier modifié : `src/Controller/PromotionsController.php`
+
+**Correct-8 — Filtrage des sélecteurs EntityType par rôle**
+
+Les formulaires de création de promotions, notes et absences listaient tous les utilisateurs sans distinction de rôle . Ajout d'un `query_builder` avec filtre `LIKE '%ROLE_TEACHER%'` ou `LIKE '%ROLE_STUDENT%'` selon le contexte.
+
+Fichiers modifiés : `src/Form/PromotionsType.php`, `src/Form/GradesType.php`, `src/Form/AbsencesType.php`

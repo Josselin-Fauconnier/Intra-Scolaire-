@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Promotions;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,24 @@ class PromotionsRepository extends ServiceEntityRepository
         parent::__construct($registry, Promotions::class);
     }
 
-    //    /**
-    //     * @return Promotions[] Returns an array of Promotions objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByStudent(User $student): array
+    {
+        return $this->createQueryBuilder('pr')
+            ->join('pr.promotionUsers', 'pu')
+            ->where('pu.user = :student')
+            ->setParameter('student', $student)
+            ->orderBy('pr.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Promotions
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findByTeacher(User $teacher): array
+    {
+        return $this->createQueryBuilder('pr')
+            ->where('pr.professor = :teacher')
+            ->setParameter('teacher', $teacher)
+            ->orderBy('pr.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

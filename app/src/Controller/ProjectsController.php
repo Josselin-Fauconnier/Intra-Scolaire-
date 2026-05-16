@@ -19,8 +19,18 @@ final class ProjectsController extends AbstractController
     #[Route(name: 'app_projects_index', methods: ['GET'])]
     public function index(ProjectsRepository $projectsRepository): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $projects = $projectsRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $projects = $projectsRepository->findByTeacher($user);
+        } else {
+            $projects = $projectsRepository->findByStudent($user);
+        }
+
         return $this->render('projects/index.html.twig', [
-            'projects' => $projectsRepository->findAll(),
+            'projects' => $projects,
         ]);
     }
 
