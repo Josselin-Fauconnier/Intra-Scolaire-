@@ -33,6 +33,7 @@ final class GradesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $grade->setUpdateHistory(new \DateTime());
             $entityManager->persist($grade);
             $entityManager->flush();
 
@@ -61,6 +62,7 @@ final class GradesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $grade->setUpdateHistory(new \DateTime());
             $entityManager->flush();
 
             return $this->redirectToRoute('app_grades_index', [], Response::HTTP_SEE_OTHER);

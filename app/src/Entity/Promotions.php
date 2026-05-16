@@ -111,7 +111,7 @@ class Promotions
     {
         if (!$this->projects->contains($project)) {
             $this->projects->add($project);
-            $project->setPrmotionId($this);
+            $project->setPromotionId($this);
         }
 
         return $this;
@@ -121,8 +121,8 @@ class Promotions
     {
         if ($this->projects->removeElement($project)) {
             // set the owning side to null (unless already changed)
-            if ($project->getPrmotionId() === $this) {
-                $project->setPrmotionId(null);
+            if ($project->getPromotionId() === $this) {
+                $project->setPromotionId(null);
             }
         }
 

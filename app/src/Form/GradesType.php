@@ -9,7 +9,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use App\Enum\GradeStatus;
 
@@ -21,10 +20,6 @@ class GradesType extends AbstractType
             ->add('grade')
             ->add('comments', null, ['required' => false])
             ->add('submission', null, ['required' => false])
-            ->add('update_history', DateTimeType::class, [
-                'widget' => 'single_text',
-                'required' => false,
-            ])
             ->add('status', EnumType::class, [
                 'class' => GradeStatus::class,
                 'required' => false,

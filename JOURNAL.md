@@ -252,3 +252,42 @@ docker compose up -d --build
 docker compose exec app composer install
 ```
 Le `composer install` est obligatoire au premier démarrage pour peupler le volume `app_vendor` qui démarre vide.
+
+### 2026/05/16 - Josselin
+
+#### Correction de 5 bugs détectés par analyse statique du code
+
+**BUG-01 — `User.addDocument()` / `removeDocument()` appelaient des méthodes inexistantes**
+
+`User.php` appelait `$document->setUserId()` et `getUserId()` alors que l'entité `Documents` avait été refactorée pour exposer `setUser()` / `getUser()`. Correction dans les deux méthodes.
+
+Fichier modifié : `src/Entity/User.php`
+
+**BUG-02 — `Grades.update_history` : colonne NOT NULL remplie manuellement via le form**
+
+La colonne `update_history` est non-nullable en base (`#[ORM\Column]` sans `nullable: true`) mais le champ était exposé dans `GradesType` avec `required: false`. Soumettre le formulaire sans le remplir provoquait une erreur DB.
+
+Correction :
+- Suppression du champ `update_history` du formulaire `GradesType.php`
+- Auto-remplissage via `$grade->setUpdateHistory(new \DateTime())` dans `GradesController` avant `persist()` (création) et avant `flush()` (modification)
+- Suppression de l'import `DateTimeType` devenu inutile dans `GradesType.php`
+
+Fichiers modifiés : `src/Form/GradesType.php`, `src/Controller/GradesController.php`
+
+**BUG-03 — Typo `getPrmotionId()` / `setPrmotionId()` propagée sur 3 fichiers**
+
+Un "o" manquant dans "Promotion" lors de la génération make:crud. Renommé en `getPromotionId()` / `setPromotionId()` et mis à jour partout.
+
+Fichiers modifiés : `src/Entity/Projects.php`, `src/Entity/Promotions.php`, `src/Form/ProjectsType.php`
+
+**BUG-04 — Mapping Doctrine invalide sur `Absences.document`**
+
+`Absences.php` déclarait `inversedBy: 'absences'` sur la relation vers `Documents`, mais `Documents` n'a pas de collection `$absences`. Mapping invalide pouvant causer une `MappingException` Doctrine. Remplacé par une relation unidirectionnelle (suppression de `inversedBy`).
+
+Fichier modifié : `src/Entity/Absences.php`
+
+**BUG-05 — `AbsencesType.end_date` manquait `'widget' => 'single_text'`**
+
+`start_date` utilisait `widget: single_text` (un seul `<input type="datetime-local">`) mais `end_date` ne le précisait pas, ce qui rendait cinq `<select>` séparés. Rendu incohérent corrigé.
+
+Fichier modifié : `src/Form/AbsencesType.php`

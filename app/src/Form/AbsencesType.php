@@ -20,6 +20,7 @@ class AbsencesType extends AbstractType
                 'widget' => 'single_text',
             ])
             ->add('end_date', DateTimeType::class, [
+                'widget' => 'single_text',
                 'required' => false,
             ])
             ->add('user', EntityType::class, [

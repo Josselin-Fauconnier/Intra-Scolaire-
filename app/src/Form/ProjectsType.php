@@ -29,7 +29,7 @@ class ProjectsType extends AbstractType
             ->add('promotion', EntityType::class, [
                 'class' => Promotions::class,
                 'choice_label' => 'name',
-                'property_path' => 'prmotionId',
+                'property_path' => 'promotionId',
             ])
         ;
     }
