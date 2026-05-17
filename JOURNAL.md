@@ -318,3 +318,29 @@ Fichier modifié : `src/Controller/PromotionsController.php`
 Les formulaires de création de promotions, notes et absences listaient tous les utilisateurs sans distinction de rôle . Ajout d'un `query_builder` avec filtre `LIKE '%ROLE_TEACHER%'` ou `LIKE '%ROLE_STUDENT%'` selon le contexte.
 
 Fichiers modifiés : `src/Form/PromotionsType.php`, `src/Form/GradesType.php`, `src/Form/AbsencesType.php`
+
+
+### 2026/05/17 - Josselin
+
+#### Filtrage des sélecteurs de projet et de document
+
+**Sélecteur `project` dans `GradesType`**
+
+Le formulaire de création de note listait tous les projets de toutes les promotions. Un professeur pouvait attribuer une note sur un projet d'un collègue. Ajout d'un `query_builder` avec `current_user` passé en option depuis le controller : un prof ne voit que les projets de ses propres promotions, un admin voit tout.
+
+Fichiers modifiés : `src/Form/GradesType.php`, `src/Controller/GradesController.php`
+
+**Sélecteur `document` dans `AbsencesType`**
+
+Le formulaire de saisie d'absence listait tous les documents uploadés par tous les utilisateurs. Ajout d'un `query_builder` filtrant uniquement les documents appartenant à des étudiants (`ROLE_STUDENT`). Le `choice_label` affiche désormais `"Nom Prénom — Titre"` pour identifier l'étudiant propriétaire du justificatif.
+
+Fichier modifié : `src/Form/AbsencesType.php`
+
+#### Pagination sur Grades, Absences, Projects, Promotions
+
+La pagination KnpPaginator était uniquement présente sur Documents. Les autres listes appelaient `findAll()` sans aucune limite.
+
+Ajout de `PaginatorInterface` dans les 4 controllers et ajout de `{{ knp_pagination_render(...) }}` dans les 4 templates. Limite fixée à 10 éléments par page.
+
+Fichiers modifiés : `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`, `templates/grades/index.html.twig`, `templates/absences/index.html.twig`, `templates/projects/index.html.twig`, `templates/promotions/index.html.twig`
+

@@ -32,7 +32,7 @@ final class DocumentsController extends AbstractController
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            5 // 5 documents par page
+            10
         );
 
         return $this->render('documents/index.html.twig', [

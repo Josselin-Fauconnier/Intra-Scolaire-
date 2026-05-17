@@ -6,6 +6,7 @@ use App\Entity\Absences;
 use App\Form\AbsencesType;
 use App\Repository\AbsencesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,17 +18,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AbsencesController extends AbstractController
 {
     #[Route(name: 'app_absences_index', methods: ['GET'])]
-    public function index(AbsencesRepository $absencesRepository): Response
+    public function index(AbsencesRepository $absencesRepository, PaginatorInterface $paginator, Request $request): Response
     {
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            $absences = $absencesRepository->findAll();
+            $data = $absencesRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
-            $absences = $absencesRepository->findByTeacher($user);
+            $data = $absencesRepository->findByTeacher($user);
         } else {
-            $absences = $absencesRepository->findByStudent($user);
+            $data = $absencesRepository->findByStudent($user);
         }
+
+        $absences = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
 
         return $this->render('absences/index.html.twig', [
             'absences' => $absences,

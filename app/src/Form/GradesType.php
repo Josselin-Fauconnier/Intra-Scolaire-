@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Grades;
 use App\Entity\Projects;
 use App\Entity\User;
+use App\Repository\ProjectsRepository;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -17,6 +18,8 @@ class GradesType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $currentUser = $options['current_user'];
+
         $builder
             ->add('grade')
             ->add('comments', null, ['required' => false])
@@ -29,6 +32,18 @@ class GradesType extends AbstractType
                 'class' => Projects::class,
                 'choice_label' => 'title',
                 'property_path' => 'projectId',
+                'query_builder' => function (ProjectsRepository $er) use ($currentUser) {
+                    $qb = $er->createQueryBuilder('p')
+                        ->join('p.promotion', 'pr')
+                        ->orderBy('p.title', 'ASC');
+
+                    if ($currentUser && !in_array('ROLE_ADMIN', $currentUser->getRoles(), true)) {
+                        $qb->where('pr.professor = :prof')
+                           ->setParameter('prof', $currentUser);
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('student', EntityType::class, [
                 'class' => User::class,
@@ -46,6 +61,8 @@ class GradesType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Grades::class,
+            'current_user' => null,
         ]);
+        $resolver->setAllowedTypes('current_user', ['null', User::class]);
     }
 }

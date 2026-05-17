@@ -6,6 +6,7 @@ use App\Entity\Promotions;
 use App\Form\PromotionsType;
 use App\Repository\PromotionsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,17 +18,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class PromotionsController extends AbstractController
 {
     #[Route(name: 'app_promotions_index', methods: ['GET'])]
-    public function index(PromotionsRepository $promotionsRepository): Response
+    public function index(PromotionsRepository $promotionsRepository, PaginatorInterface $paginator, Request $request): Response
     {
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            $promotions = $promotionsRepository->findAll();
+            $data = $promotionsRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
-            $promotions = $promotionsRepository->findByTeacher($user);
+            $data = $promotionsRepository->findByTeacher($user);
         } else {
-            $promotions = $promotionsRepository->findByStudent($user);
+            $data = $promotionsRepository->findByStudent($user);
         }
+
+        $promotions = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
 
         return $this->render('promotions/index.html.twig', [
             'promotions' => $promotions,
