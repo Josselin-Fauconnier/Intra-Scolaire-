@@ -286,15 +286,10 @@ Fichiers modifiés : `src/Entity/Projects.php`, `src/Entity/Promotions.php`, `sr
 
 Fichier modifié : `src/Entity/Absences.php`
 
-**Correct-5 — `AbsencesType.end_date` manquait `'widget' => 'single_text'`**
-
-`start_date` utilisait `widget: single_text` (un seul `<input type="datetime-local">`) mais `end_date` ne le précisait pas, ce qui rendait cinq `<select>` séparés. Rendu incohérent corrigé.
-
-Fichier modifié : `src/Form/AbsencesType.php`
 
 
 
-**Correct-6 — Filtrage des données par rôle dans les listes**
+**Correct-5 — Filtrage des données par rôle dans les listes**
 
 Les index de Grades, Absences, Projects et Promotions appelaient `findAll()` sans restriction : un étudiant voyait les notes et absences de tous les autres utilisateurs.
 
@@ -307,13 +302,13 @@ Logique ajoutée dans les controllers : ROLE_ADMIN → tout, ROLE_TEACHER → se
 
 Fichiers modifiés : `src/Repository/GradesRepository.php`, `src/Repository/AbsencesRepository.php`, `src/Repository/ProjectsRepository.php`, `src/Repository/PromotionsRepository.php`, `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`
 
-**Correct-07 — Vérification d'appartenance sur les promotions**
+**Correct-06 — Vérification d'appartenance sur les promotions**
 
 N'importe quel professeur pouvait modifier ou supprimer la promotion d'un autre prof en changeant l'ID dans l'URL. Ajout d'un contrôle d'appartenance dans `edit()` et `delete()` de `PromotionsController` : si l'utilisateur n'est pas admin et n'est pas le professeur de la promotion, une exception 403 est levée.
 
 Fichier modifié : `src/Controller/PromotionsController.php`
 
-**Correct-8 — Filtrage des sélecteurs EntityType par rôle**
+**Correct-7 — Filtrage des sélecteurs EntityType par rôle**
 
 Les formulaires de création de promotions, notes et absences listaient tous les utilisateurs sans distinction de rôle . Ajout d'un `query_builder` avec filtre `LIKE '%ROLE_TEACHER%'` ou `LIKE '%ROLE_STUDENT%'` selon le contexte.
 
