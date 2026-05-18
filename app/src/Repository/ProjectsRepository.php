@@ -17,12 +17,13 @@ class ProjectsRepository extends ServiceEntityRepository
         parent::__construct($registry, Projects::class);
     }
 
-    public function findByStudentPromotions(User $user): array
+    public function findByStudent(User $user): array
     {
         return $this->createQueryBuilder('p')
             ->join('p.promotion', 'promo')
-            ->where('promo IN (:promotions)')
-            ->setParameter('promotions', $user->getPromotions())
+            ->join('promo.promotionUsers', 'pu')
+            ->where('pu.user = :user')
+            ->setParameter('user', $user)
             ->getQuery()
             ->getResult();
     }

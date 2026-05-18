@@ -83,7 +83,7 @@ class Promotions
     {
         if (!$this->promotionUsers->contains($promotionUser)) {
             $this->promotionUsers->add($promotionUser);
-            $promotionUser->setPromotionId($this);
+            $promotionUser->setPromotion($this);
         }
 
         return $this;
@@ -93,8 +93,8 @@ class Promotions
     {
         if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promotionUser->getPromotionId() === $this) {
-                $promotionUser->setPromotionId(null);
+            if ($promotionUser->getPromotion() === $this) {
+                $promotionUser->setPromotion(null);
             }
         }
 

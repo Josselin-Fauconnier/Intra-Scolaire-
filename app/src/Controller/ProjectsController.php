@@ -26,10 +26,10 @@ final class ProjectsController extends AbstractController
     {
         $user = $this->getUser();
 
-        /* if ($this->isGranted('ROLE_STUDENT')) {
-            $projects = $projectsRepository->findByStudentPromotions($user);
-        } else */
-        $projects = $projectsRepository->findAll();
+        if ($this->isGranted('ROLE_STUDENT')) {
+            $projects = $projectsRepository->findByStudent($user);
+        } else
+            $projects = $projectsRepository->findAll();
 
         return $this->render('projects/index.html.twig', [
             'projects' => $projects,
