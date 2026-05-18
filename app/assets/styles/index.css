@@ -665,3 +665,14 @@ textarea {
 ::-webkit-scrollbar-thumb:active {
   background: #232448;
 }
+
+.auth-link {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  transition: var(--transition-fast);
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}

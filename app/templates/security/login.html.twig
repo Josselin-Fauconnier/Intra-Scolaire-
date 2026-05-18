@@ -62,8 +62,15 @@
         </label>
 
         <button class="btn btn-primary auth-submit" type="submit">
-            Se connecter
+             Se connecter
         </button>
+
+        <div class="subtitle text-center">
+              Pas encore de compte ?
+         <a href="{{ path('app_register') }}">
+                 S'inscrire
+        </a>
+</div>
     </form>
 </div>
 {% endblock %}
