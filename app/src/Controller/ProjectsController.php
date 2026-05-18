@@ -2,9 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Grades;
 use App\Entity\Projects;
+use App\Enum\GradeStatus;
 use App\Form\ProjectsType;
+use App\Repository\GradesRepository;
 use App\Repository\ProjectsRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,10 +50,17 @@ final class ProjectsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_projects_show', methods: ['GET'])]
-    public function show(Projects $project): Response
+    public function show(Projects $project, GradesRepository $gradesRepository): Response
     {
+
+        $grades = $gradesRepository->findBy(
+            ['project' => $project],
+            ['status' => 'ASC']
+        );
+
         return $this->render('projects/show.html.twig', [
             'project' => $project,
+            'grades' => $grades,
         ]);
     }
 
@@ -82,5 +93,47 @@ final class ProjectsController extends AbstractController
         }
 
         return $this->redirectToRoute('app_projects_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+
+    #[Route('/{id}/register', name: 'app_projects_register', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function register(Request $request, Projects $project, EntityManagerInterface $entityManager, GradesRepository $gradesRepository): Response
+    {
+
+        // Verification si student deja inscrit
+        $existingGrade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if ($existingGrade) {
+            $this->addFlash('warning', 'Vous êtes déjà inscrit à ce projet.');
+
+            return $this->redirectToRoute(
+                'app_projects_show',
+                ['id' => $project->getId()]
+            );
+        }
+
+        // Creation grade
+        $grade = new Grades();
+
+        $grade->setProject($project);
+        $grade->setStudent($this->getUser());
+        $grade->setStatus(GradeStatus::PENDING);
+        $grade->setGrade(null);
+        $grade->setUpdateHistory(new DateTime());
+
+        $entityManager->persist($grade);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Vous desormais inscrit à ce projet.');
+
+        return $this->redirectToRoute(
+            'app_projects_show',
+            ['id' => $project->getId()],
+            Response::HTTP_SEE_OTHER
+        );
     }
 }
