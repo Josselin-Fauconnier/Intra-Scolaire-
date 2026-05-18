@@ -128,7 +128,9 @@ final class NotificationsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Notifications $notification, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(NotificationsType::class, $notification);
+        $form = $this->createForm(NotificationsType::class, $notification, [
+            'current_user' => $this->getUser(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

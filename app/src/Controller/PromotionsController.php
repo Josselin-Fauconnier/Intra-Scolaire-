@@ -30,7 +30,7 @@ final class PromotionsController extends AbstractController
             $data = $promotionsRepository->findByStudent($user);
         }
 
-        $promotions = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
+        $promotions = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         return $this->render('promotions/index.html.twig', [
             'promotions' => $promotions,

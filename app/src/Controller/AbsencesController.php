@@ -30,7 +30,7 @@ final class AbsencesController extends AbstractController
             $data = $absencesRepository->findByStudent($user);
         }
 
-        $absences = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
+        $absences = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         return $this->render('absences/index.html.twig', [
             'absences' => $absences,

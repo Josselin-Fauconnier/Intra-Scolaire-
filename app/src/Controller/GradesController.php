@@ -30,7 +30,7 @@ final class GradesController extends AbstractController
             $data = $gradesRepository->findByStudent($user);
         }
 
-        $grades = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
+        $grades = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         return $this->render('grades/index.html.twig', [
             'grades' => $grades,

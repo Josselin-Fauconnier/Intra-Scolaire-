@@ -30,7 +30,7 @@ final class ProjectsController extends AbstractController
             $data = $projectsRepository->findByStudent($user);
         }
 
-        $projects = $paginator->paginate($data, $request->query->getInt('page', 1), 10);
+        $projects = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         return $this->render('projects/index.html.twig', [
             'projects' => $projects,
