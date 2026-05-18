@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Promotion</th>
                 <th>Titre</th>
                 <th>Visibilité</th>
                 <th>Description</th>
@@ -27,6 +28,7 @@
         {% for project in projects %}
             <tr>
                 <td>{{ project.id }}</td>
+                <td>{{ project.promotion.name }}</td>
                 <td>{{ project.title }}</td>
                 <td>{{ project.visibility ? 'Public' : 'Privé' }}</td>
                 <td>{{ project.description }}</td>

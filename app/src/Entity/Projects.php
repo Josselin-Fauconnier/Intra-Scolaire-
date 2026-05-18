@@ -53,12 +53,12 @@ class Projects
         return $this->id;
     }
 
-    public function getPrmotionId(): ?Promotions
+    public function getPromotion(): ?Promotions
     {
         return $this->promotion;
     }
 
-    public function setPrmotionId(?Promotions $promotion): static
+    public function setPromotion(?Promotions $promotion): static
     {
         $this->promotion = $promotion;
 
