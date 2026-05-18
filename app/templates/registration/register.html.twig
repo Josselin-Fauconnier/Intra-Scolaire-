@@ -2,21 +2,99 @@
 
 {% block title %}Register{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/index.css') }}">
+{% endblock %}
+
 {% block body %}
-    <h1>Register</h1>
+<div class="auth-page center">
+    {{ form_start(registrationForm, {
+        attr: {
+            class: 'auth-card card'
+        }
+    }) }}
 
-    {{ form_errors(registrationForm) }}
+        <div class="auth-header text-center">
+            <span class="pill auth-pill">Inscription</span>
+            <h1 class="title auth-title">Créer un compte</h1>
+            <p class="subtitle">
+                Rejoins ton espace Intra-Scolaire.
+            </p>
+        </div>
 
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.firstname) }}
-        {{ form_row(registrationForm.lastname) }}
-        {{ form_row(registrationForm.phone_number) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+        {% if form_errors(registrationForm) %}
+            <div class="auth-alert">
+                {{ form_errors(registrationForm) }}
+            </div>
+        {% endif %}
 
-        <button type="submit" class="btn">Register</button>
+        <div class="auth-field">
+            {{ form_label(registrationForm.firstname, 'Prénom') }}
+            {{
+                form_widget(registrationForm.firstname, {
+                    attr: {
+                        class: 'input'
+                    }
+                })
+            }}
+        </div>
+
+        <div class="auth-field">
+            {{ form_label(registrationForm.lastname, 'Nom') }}
+            {{
+                form_widget(registrationForm.lastname, {
+                    attr: {
+                        class: 'input'
+                    }
+                })
+            }}
+        </div>
+
+        <div class="auth-field">
+            {{ form_label(registrationForm.phone_number, 'Téléphone') }}
+            {{
+                form_widget(registrationForm.phone_number, {
+                    attr: {
+                        class: 'input'
+                    }
+                })
+            }}
+        </div>
+
+        <div class="auth-field">
+            {{ form_label(registrationForm.email, 'Email') }}
+            {{
+                form_widget(registrationForm.email, {
+                    attr: {
+                        class: 'input'
+                    }
+                })
+            }}
+        </div>
+
+        <div class="auth-field">
+            {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
+            {{
+                form_widget(registrationForm.plainPassword, {
+                    attr: {
+                        class: 'input'
+                    }
+                })
+            }}
+        </div>
+
+        <label class="auth-remember subtitle">
+            {{
+                form_widget(registrationForm.agreeTerms)
+            }}
+            J'accepte les conditions
+        </label>
+
+        <button type="submit" class="btn btn-primary auth-submit">
+            S'inscrire
+        </button>
+
     {{ form_end(registrationForm) }}
+</div>
 {% endblock %}
