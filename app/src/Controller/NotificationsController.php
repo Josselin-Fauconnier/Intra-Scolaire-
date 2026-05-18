@@ -9,6 +9,7 @@ use App\Repository\NotificationRecipientsRepository;
 use App\Repository\NotificationsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,9 +21,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class NotificationsController extends AbstractController
 {
     #[Route(name: 'app_notifications_index', methods: ['GET'])]
-    public function index(NotificationRecipientsRepository $repo): Response
+    public function index(NotificationRecipientsRepository $repo, PaginatorInterface $paginator, Request $request): Response
     {
-        $recipients = $repo->findByUser($this->getUser());
+        $recipients = $paginator->paginate(
+            $repo->findByUser($this->getUser()),
+            $request->query->getInt('page', 1),
+            5
+        );
 
         return $this->render('notifications/index.html.twig', [
             'recipients' => $recipients,
@@ -39,7 +44,7 @@ final class NotificationsController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if ($recipient->getUserId() !== $this->getUser()) {
+        if ($recipient->getUserId()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException();
         }
 
@@ -55,13 +60,38 @@ final class NotificationsController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         $notification = new Notifications();
-        $form = $this->createForm(NotificationsType::class, $notification);
+        $currentUser  = $this->getUser();
+        $form = $this->createForm(NotificationsType::class, $notification, [
+            'current_user' => $currentUser,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $audience  = $form->get('audience')->getData();
+            $promotion = $form->get('promotion')->getData();
+
+            // Enseignants limités à leurs propres promotions
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                if ($audience !== 'promotion') {
+                    throw $this->createAccessDeniedException();
+                }
+                if ($promotion !== null && $promotion->getProfessorId()?->getId() !== $currentUser->getId()) {
+                    throw $this->createAccessDeniedException();
+                }
+            }
+
             $entityManager->persist($notification);
 
-            foreach ($userRepository->findAll() as $user) {
+            $recipients = match ($audience) {
+                'students'  => $userRepository->findByRole('ROLE_STUDENT'),
+                'teachers'  => $userRepository->findByRole('ROLE_TEACHER'),
+                'promotion' => $promotion
+                    ? array_map(fn($pu) => $pu->getUserId(), $promotion->getpromotionUsers()->toArray())
+                    : [],
+                default => $userRepository->findAll(),
+            };
+
+            foreach ($recipients as $user) {
                 $recipient = new NotificationRecipients();
                 $recipient->setNotificationId($notification);
                 $recipient->setUserId($user);
@@ -81,8 +111,14 @@ final class NotificationsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_notifications_show', methods: ['GET'])]
-    public function show(Notifications $notification): Response
+    public function show(Notifications $notification, NotificationRecipientsRepository $repo): Response
     {
+        $recipient = $repo->findOneBy(['notification' => $notification, 'user' => $this->getUser()]);
+
+        if (!$recipient) {
+            throw $this->createAccessDeniedException();
+        }
+
         return $this->render('notifications/show.html.twig', [
             'notification' => $notification,
         ]);

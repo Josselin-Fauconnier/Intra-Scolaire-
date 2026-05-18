@@ -339,3 +339,60 @@ Ajout de `PaginatorInterface` dans les 4 controllers et ajout de `{{ knp_paginat
 
 Fichiers modifiés : `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`, `templates/grades/index.html.twig`, `templates/absences/index.html.twig`, `templates/projects/index.html.twig`, `templates/promotions/index.html.twig`
 
+### 2026/05/18 - Josselin
+
+#### correc 1  — Comparaison d'objet dans `NotificationsController.markRead()`
+
+`markRead()` vérifiait l'appartenance du destinataire avec `$recipient->getUserId() !== $this->getUser()` — comparaison de références d'objets PHP, pas d'IDs. Même bogue que SEC-02 (PromotionsController). Dans un seul cycle de requête Doctrine l'identity map garantit généralement la même référence, mais c'est fragile et non garanti.
+
+Correction : comparaison des IDs entiers.
+
+```php
+// Avant
+if ($recipient->getUserId() !== $this->getUser())
+
+// Après
+if ($recipient->getUserId()?->getId() !== $this->getUser()->getId())
+```
+
+Fichier modifié : `src/Controller/NotificationsController.php`
+
+#### correct 2 — `show()` sans vérification d'appartenance dans `NotificationsController`
+
+`show()` acceptait n'importe quel `ROLE_USER` sur `/notifications/{id}` même si l'utilisateur n'était pas destinataire de la notification. Ajout d'un contrôle via `findOneBy(['notification' => ..., 'user' => ...])` : si aucun `NotificationRecipients` n'existe pour cet utilisateur, une exception 403 est levée.
+
+Fichier modifié : `src/Controller/NotificationsController.php`
+
+
+#### correct 2 — Ciblage des notifications par audience et par rôle expéditeur
+
+Le formulaire de création envoyait la notification à tous les utilisateurs (`findAll()`), sans distinction de rôle ni de promotion.
+
+**Champs ajoutés dans `NotificationsType` (`mapped: false`) :**
+- `audience` (ChoiceType) : choix du groupe destinataire
+- `promotion` (EntityType, optionnel) : promotion cible si `audience = promotion`
+
+**Logique d'audience selon le rôle de l'expéditeur :**
+
+| Expéditeur | Choix disponibles | Promotions visibles |
+|---|---|---|
+| Admin | Tous / Étudiants / Professeurs / Une promotion | Toutes |
+| Enseignant | Une promotion uniquement | Les siennes seulement |
+
+Dans `NotificationsController::new()`, un `match` sur `audience` choisit les destinataires :
+- `all` → `findAll()`
+- `students` → `findByRole('ROLE_STUDENT')`
+- `teachers` → `findByRole('ROLE_TEACHER')`
+- `promotion` → membres via `getpromotionUsers()`
+
+Validation serveur : un enseignant qui tenterait d'envoyer à une autre audience ou à une promotion ne lui appartenant pas reçoit un 403.
+
+Ajout de `findByRole(string $role): array` dans `UserRepository`.
+
+Fichiers modifiés : `src/Form/NotificationsType.php`, `src/Controller/NotificationsController.php`, `src/Repository/UserRepository.php`
+
+#### correct 3 — Pagination de la liste des notifications (5 par page)
+
+`index()` chargeait toutes les notifications d'un utilisateur sans limite via `findByUser()`. Ajout de KnpPaginator avec une limite de 5 par page et `{{ knp_pagination_render(recipients) }}` dans le template.
+
+Fichiers modifiés : `src/Controller/NotificationsController.php`, `templates/notifications/index.html.twig`
