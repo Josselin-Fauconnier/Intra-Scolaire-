@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Projects;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,16 @@ class ProjectsRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Projects::class);
+    }
+
+    public function findByStudentPromotions(User $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.promotion', 'promo')
+            ->where('promo IN (:promotions)')
+            ->setParameter('promotions', $user->getPromotions())
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
