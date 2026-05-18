@@ -27,7 +27,7 @@
         <a href="{{ path('app_projects_edit', {'id': project.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
         {{ include('projects/_delete_form.html.twig') }}
     {% endif %}
-    {% if is_granted('ROLE_STUDENT') %}
+    {% if is_granted('ROLE_STUDENT') and not hasGrade %}
         <form method="post" action="{{ path('app_projects_register', {'id': project.id}) }}">
             <button type="submit" class="btn btn-success btn-sm">
                 S'inscrire
@@ -35,6 +35,46 @@
         </form>
     {% endif %}
 
+    {% if hasGrade %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Soumission</th>
+                <th>Mise à jour</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>{{ hasGrade.id }}</td>
+                <td>{{ hasGrade.grade }}</td>
+                <td>{{ hasGrade.comments }}</td>
+                <td>{{ hasGrade.submission }}</td>
+                <td>{{ hasGrade.updateHistory ? hasGrade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
+                <td>{{ hasGrade.status.value }}</td>
+                <td>
+                    {% if hasGrade.status.value === 'en_attente' %}
+                    {{ form_start(submissionForm, {'action': path('app_projects_show', {'id': project.id})}) }}
+                        {{ form_row(submissionForm.submission) }}
+                        <button class="btn btn-primary">Enregistrer mon lien</button>
+                    {{ form_end(submissionForm) }}
+                    {% endif %} 
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">Aucune note enregistrée.</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if is_granted('ROLE_TEACHER') %}
     <table class="table table-hover">
         <thead>
             <tr>
@@ -71,5 +111,6 @@
         {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 </turbo-frame>
 {% endblock %}

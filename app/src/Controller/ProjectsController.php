@@ -6,6 +6,7 @@ use App\Entity\Grades;
 use App\Entity\Projects;
 use App\Enum\GradeStatus;
 use App\Form\ProjectsType;
+use App\Form\GradeSubmission;
 use App\Repository\GradesRepository;
 use App\Repository\ProjectsRepository;
 use DateTime;
@@ -49,8 +50,8 @@ final class ProjectsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_projects_show', methods: ['GET'])]
-    public function show(Projects $project, GradesRepository $gradesRepository): Response
+    #[Route('/{id}', name: 'app_projects_show', methods: ['GET', 'POST'])]
+    public function show(Request $request, Projects $project, GradesRepository $gradesRepository, EntityManagerInterface $entityManager): Response
     {
 
         $grades = $gradesRepository->findBy(
@@ -58,9 +59,34 @@ final class ProjectsController extends AbstractController
             ['status' => 'ASC']
         );
 
+
+        $grade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if (!$grade) {
+            throw $this->createNotFoundException('Grade introuvable');
+        }
+
+        $form = $this->createForm(GradeSubmission::class, $grade);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet soumis avec success.');
+
+            return $this->redirectToRoute('app_projects_show', [
+                'id' => $project->getId()
+            ]);
+        }
+
+
         return $this->render('projects/show.html.twig', [
             'project' => $project,
             'grades' => $grades,
+            'hasGrade' => $grade,
+            'submissionForm' => $form->createView(),
         ]);
     }
 
@@ -136,4 +162,41 @@ final class ProjectsController extends AbstractController
             Response::HTTP_SEE_OTHER
         );
     }
+
+    /*     #[Route('/project/{id}/submit', name: 'app_grades_submit', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function submit(
+        Request $request,
+        Projects $project,
+        GradesRepository $gradesRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+
+        $grade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if (!$grade) {
+            throw $this->createNotFoundException('Grade introuvable');
+        }
+
+        $form = $this->createForm(GradeSubmission::class, $grade);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet soumis avec success.');
+
+            return $this->redirectToRoute('app_projects_show', [
+                'id' => $project->getId()
+            ]);
+        }
+
+        return $this->render('projects/show.html.twig', [
+            'grade' => $grade,
+            'form' => $form->createView(),
+            'submissionForm' => $form->createView(),
+        ]);
+    } */
 }

@@ -76,7 +76,7 @@ final class GradesController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Grades $grade, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$grade->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $grade->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($grade);
             $entityManager->flush();
         }

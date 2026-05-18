@@ -32,12 +32,12 @@ class GradesType extends AbstractType
             ->add('project', EntityType::class, [
                 'class' => Projects::class,
                 'choice_label' => 'title',
-                'property_path' => 'projectId',
+                'property_path' => 'project',
             ])
             ->add('student', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'property_path' => 'studentId',
+                'property_path' => 'student',
             ])
         ;
     }
