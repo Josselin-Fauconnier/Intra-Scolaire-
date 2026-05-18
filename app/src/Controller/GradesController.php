@@ -19,12 +19,16 @@ final class GradesController extends AbstractController
     #[Route(name: 'app_grades_index', methods: ['GET'])]
     public function index(GradesRepository $gradesRepository): Response
     {
+        $grades = $gradesRepository->findBy([
+            'student' => $this->getUser(),
+        ]);
+
         return $this->render('grades/index.html.twig', [
-            'grades' => $gradesRepository->findAll(),
+            'grades' => $grades,
         ]);
     }
 
-    #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
+    /* #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -43,11 +47,13 @@ final class GradesController extends AbstractController
             'grade' => $grade,
             'form' => $form,
         ]);
-    }
+    } */
 
     #[Route('/{id}', name: 'app_grades_show', methods: ['GET'])]
     public function show(Grades $grade): Response
     {
+
+
         return $this->render('grades/show.html.twig', [
             'grade' => $grade,
         ]);
