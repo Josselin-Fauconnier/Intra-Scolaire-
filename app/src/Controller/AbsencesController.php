@@ -22,7 +22,7 @@ final class AbsencesController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $absencesRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $absencesRepository->findByTeacher($user);
@@ -89,7 +89,7 @@ final class AbsencesController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$absence->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $absence->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($absence);
             $entityManager->flush();
         }

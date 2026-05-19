@@ -17,7 +17,9 @@
             <span class="user-role">
                 {% if is_granted('ROLE_ADMIN') %}Administrateur
                 {% elseif is_granted('ROLE_TEACHER') %}Professeur
+                {% elseif is_granted('ROLE_VISITOR') %}Visiteur
                 {% else %}Étudiant{% endif %}
+
             </span>
         </div>
 

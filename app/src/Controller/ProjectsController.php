@@ -27,7 +27,7 @@ final class ProjectsController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $projectsRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $projectsRepository->findByTeacher($user);
