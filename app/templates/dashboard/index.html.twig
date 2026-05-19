@@ -86,6 +86,11 @@
         </ul>
 
         <div class="sidebar-footer">
+            <a href="{{ path('app_profile') }}"
+               class="sidebar-link"
+               data-turbo-frame="main-frame">
+                <i class="bi bi-person-circle"></i> Mon profil
+            </a>
             <a href="{{ logout_path() }}">
                 <i class="bi bi-box-arrow-left"></i> Déconnexion
             </a>
