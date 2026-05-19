@@ -6,8 +6,10 @@ use App\Repository\PromotionsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: PromotionsRepository::class)]
+#[UniqueEntity('name', message: "Cette promotion existe déjà")]
 class Promotions
 {
     #[ORM\Id]
@@ -16,7 +18,7 @@ class Promotions
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name = '';
 
     #[ORM\ManyToOne(inversedBy: 'promotions')]
     #[ORM\JoinColumn(nullable: false)]
@@ -81,7 +83,7 @@ class Promotions
     {
         if (!$this->promotionUsers->contains($promotionUser)) {
             $this->promotionUsers->add($promotionUser);
-            $promotionUser->setPromotionId($this);
+            $promotionUser->setPromotion($this);
         }
 
         return $this;
@@ -91,8 +93,8 @@ class Promotions
     {
         if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promotionUser->getPromotionId() === $this) {
-                $promotionUser->setPromotionId(null);
+            if ($promotionUser->getPromotion() === $this) {
+                $promotionUser->setPromotion(null);
             }
         }
 
@@ -111,7 +113,7 @@ class Promotions
     {
         if (!$this->projects->contains($project)) {
             $this->projects->add($project);
-            $project->setPromotionId($this);
+            $project->setPromotion($this);
         }
 
         return $this;
@@ -121,8 +123,8 @@ class Promotions
     {
         if ($this->projects->removeElement($project)) {
             // set the owning side to null (unless already changed)
-            if ($project->getPromotionId() === $this) {
-                $project->setPromotionId(null);
+            if ($project->getPromotion() === $this) {
+                $project->setPromotion(null);
             }
         }
 

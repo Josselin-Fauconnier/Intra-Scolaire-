@@ -43,24 +43,24 @@ class Grades
         return $this->id;
     }
 
-    public function getProjectId(): ?Projects
+    public function getProject(): ?Projects
     {
         return $this->project;
     }
 
-    public function setProjectId(?Projects $project): static
+    public function setProject(?Projects $project): static
     {
         $this->project = $project;
 
         return $this;
     }
 
-    public function getStudentId(): ?User
+    public function getStudent(): ?User
     {
         return $this->student;
     }
 
-    public function setStudentId(?User $student): static
+    public function setStudent(?User $student): static
     {
         $this->student = $student;
 

@@ -14,6 +14,7 @@
     <table class="table">
         <tbody>
             <tr><th>ID</th><td>{{ project.id }}</td></tr>
+            <tr><th>Promotion</th><td>{{ project.promotion.name }}</td></tr>
             <tr><th>Titre</th><td>{{ project.title }}</td></tr>
             <tr><th>Visibilité</th><td>{{ project.visibility ? 'Public' : 'Privé' }}</td></tr>
             <tr><th>Description</th><td>{{ project.description }}</td></tr>
@@ -25,6 +26,91 @@
     {% if is_granted('ROLE_TEACHER') %}
         <a href="{{ path('app_projects_edit', {'id': project.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
         {{ include('projects/_delete_form.html.twig') }}
+    {% endif %}
+    {% if is_granted('ROLE_STUDENT') and not hasGrade %}
+        <form method="post" action="{{ path('app_projects_register', {'id': project.id}) }}">
+            <button type="submit" class="btn btn-success btn-sm">
+                S'inscrire
+            </button>
+        </form>
+    {% endif %}
+
+    {% if hasGrade %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Soumission</th>
+                <th>Mise à jour</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>{{ hasGrade.id }}</td>
+                <td>{{ hasGrade.grade }}</td>
+                <td>{{ hasGrade.comments }}</td>
+                <td>{{ hasGrade.submission }}</td>
+                <td>{{ hasGrade.updateHistory ? hasGrade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
+                <td>{{ hasGrade.status.value }}</td>
+                <td>
+                    {% if hasGrade.status.value === 'en_attente' %}
+                    {{ form_start(submissionForm, {'action': path('app_projects_show', {'id': project.id})}) }}
+                        {{ form_row(submissionForm.submission) }}
+                        <button class="btn btn-primary">Enregistrer mon lien</button>
+                    {{ form_end(submissionForm) }}
+                    {% endif %} 
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">Aucune note enregistrée.</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if is_granted('ROLE_TEACHER') %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Soumission</th>
+                <th>Mise à jour</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for grade in grades %}
+            <tr>
+                <td>{{ grade.id }}</td>
+                <td>{{ grade.grade }}</td>
+                <td>{{ grade.comments }}</td>
+                <td>{{ grade.submission }}</td>
+                <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
+                <td>{{ grade.status.value }}</td>
+                <td>
+                    <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                    {% if is_granted('ROLE_TEACHER') %}
+                        <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">Aucune note enregistrée.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
 </turbo-frame>
 {% endblock %}

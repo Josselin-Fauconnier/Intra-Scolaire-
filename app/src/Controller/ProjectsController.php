@@ -2,9 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Grades;
 use App\Entity\Projects;
+use App\Enum\GradeStatus;
 use App\Form\ProjectsType;
+use App\Form\GradeSubmission;
+use App\Repository\GradesRepository;
 use App\Repository\ProjectsRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -58,11 +63,49 @@ final class ProjectsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_projects_show', methods: ['GET'])]
-    public function show(Projects $project): Response
+    #[Route('/{id}', name: 'app_projects_show', methods: ['GET', 'POST'])]
+    public function show(Request $request, Projects $project, GradesRepository $gradesRepository, EntityManagerInterface $entityManager): Response
     {
+
+        $grades = $gradesRepository->findBy(
+            ['project' => $project],
+            ['status' => 'ASC']
+        );
+
+
+        $grade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if (!$grade) {
+            $grade = new Grades();
+            $grade->setProject($project);
+            $grade->setStudent($this->getUser());
+            $grade->setStatus(GradeStatus::PENDING);
+            $grade->setUpdateHistory(new DateTime());
+            $entityManager->persist($grade);
+            $entityManager->flush();
+        }
+
+        $form = $this->createForm(GradeSubmission::class, $grade);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet soumis avec success.');
+
+            return $this->redirectToRoute('app_projects_show', [
+                'id' => $project->getId()
+            ]);
+        }
+
+
         return $this->render('projects/show.html.twig', [
             'project' => $project,
+            'grades' => $grades,
+            'hasGrade' => $grade,
+            'submissionForm' => $form->createView(),
         ]);
     }
 
@@ -89,11 +132,90 @@ final class ProjectsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Projects $project, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($project);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_projects_index', [], Response::HTTP_SEE_OTHER);
     }
+
+
+    #[Route('/{id}/register', name: 'app_projects_register', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function register(Request $request, Projects $project, EntityManagerInterface $entityManager, GradesRepository $gradesRepository): Response
+    {
+
+        // Verification si student deja inscrit
+        $existingGrade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if ($existingGrade) {
+            $this->addFlash('warning', 'Vous êtes déjà inscrit à ce projet.');
+
+            return $this->redirectToRoute(
+                'app_projects_show',
+                ['id' => $project->getId()]
+            );
+        }
+
+        // Creation grade
+        $grade = new Grades();
+
+        $grade->setProject($project);
+        $grade->setStudent($this->getUser());
+        $grade->setStatus(GradeStatus::PENDING);
+        $grade->setGrade(null);
+        $grade->setUpdateHistory(new DateTime());
+
+        $entityManager->persist($grade);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Vous desormais inscrit à ce projet.');
+
+        return $this->redirectToRoute(
+            'app_projects_show',
+            ['id' => $project->getId()],
+            Response::HTTP_SEE_OTHER
+        );
+    }
+
+    /*     #[Route('/project/{id}/submit', name: 'app_grades_submit', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function submit(
+        Request $request,
+        Projects $project,
+        GradesRepository $gradesRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+
+        $grade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $this->getUser(),
+        ]);
+
+        if (!$grade) {
+            throw $this->createNotFoundException('Grade introuvable');
+        }
+
+        $form = $this->createForm(GradeSubmission::class, $grade);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet soumis avec success.');
+
+            return $this->redirectToRoute('app_projects_show', [
+                'id' => $project->getId()
+            ]);
+        }
+
+        return $this->render('projects/show.html.twig', [
+            'grade' => $grade,
+            'form' => $form->createView(),
+            'submissionForm' => $form->createView(),
+        ]);
+    } */
 }

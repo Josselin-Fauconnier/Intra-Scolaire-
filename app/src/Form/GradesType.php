@@ -31,7 +31,7 @@ class GradesType extends AbstractType
             ->add('project', EntityType::class, [
                 'class' => Projects::class,
                 'choice_label' => 'title',
-                'property_path' => 'projectId',
+                'property_path' => 'project',
                 'query_builder' => function (ProjectsRepository $er) use ($currentUser) {
                     $qb = $er->createQueryBuilder('p')
                         ->join('p.promotion', 'pr')
@@ -39,7 +39,7 @@ class GradesType extends AbstractType
 
                     if ($currentUser && !in_array('ROLE_ADMIN', $currentUser->getRoles(), true)) {
                         $qb->where('pr.professor = :prof')
-                           ->setParameter('prof', $currentUser);
+                            ->setParameter('prof', $currentUser);
                     }
 
                     return $qb;
@@ -48,7 +48,7 @@ class GradesType extends AbstractType
             ->add('student', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'property_path' => 'studentId',
+                'property_path' => 'student',
                 'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
                     ->where('u.roles LIKE :role')
                     ->setParameter('role', '%ROLE_STUDENT%')

@@ -7,8 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProjectsRepository::class)]
+#[UniqueEntity(fields: ['promotion', 'title'], message: "Ce projet existe déjà pour cette promotion.", errorPath: 'title')]
 class Projects
 {
     #[ORM\Id]
@@ -21,13 +23,13 @@ class Projects
     private ?Promotions $promotion = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private string $title = '';
 
     #[ORM\Column]
-    private ?bool $visibility = null;
+    private bool $visibility = False;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $google_drive = null;
@@ -51,12 +53,12 @@ class Projects
         return $this->id;
     }
 
-    public function getPromotionId(): ?Promotions
+    public function getPromotion(): ?Promotions
     {
         return $this->promotion;
     }
 
-    public function setPromotionId(?Promotions $promotion): static
+    public function setPromotion(?Promotions $promotion): static
     {
         $this->promotion = $promotion;
 
@@ -135,7 +137,7 @@ class Projects
     {
         if (!$this->grades->contains($grade)) {
             $this->grades->add($grade);
-            $grade->setProjectId($this);
+            $grade->setProject($this);
         }
 
         return $this;
@@ -145,8 +147,8 @@ class Projects
     {
         if ($this->grades->removeElement($grade)) {
             // set the owning side to null (unless already changed)
-            if ($grade->getProjectId() === $this) {
-                $grade->setProjectId(null);
+            if ($grade->getProject() === $this) {
+                $grade->setProject(null);
             }
         }
 

@@ -37,7 +37,7 @@ final class GradesController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
+    /* #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -59,11 +59,13 @@ final class GradesController extends AbstractController
             'grade' => $grade,
             'form' => $form,
         ]);
-    }
+    } */
 
     #[Route('/{id}', name: 'app_grades_show', methods: ['GET'])]
     public function show(Grades $grade): Response
     {
+
+
         return $this->render('grades/show.html.twig', [
             'grade' => $grade,
         ]);
@@ -95,7 +97,7 @@ final class GradesController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Grades $grade, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$grade->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $grade->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($grade);
             $entityManager->flush();
         }
