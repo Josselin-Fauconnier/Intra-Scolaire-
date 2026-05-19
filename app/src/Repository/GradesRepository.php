@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Grades;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,25 @@ class GradesRepository extends ServiceEntityRepository
         parent::__construct($registry, Grades::class);
     }
 
-    //    /**
-    //     * @return Grades[] Returns an array of Grades objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByStudent(User $student): array
+    {
+        return $this->createQueryBuilder('g')
+            ->where('g.student = :student')
+            ->setParameter('student', $student)
+            ->orderBy('g.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Grades
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findByTeacher(User $teacher): array
+    {
+        return $this->createQueryBuilder('g')
+            ->join('g.project', 'p')
+            ->join('p.promotion', 'pr')
+            ->where('pr.professor = :teacher')
+            ->setParameter('teacher', $teacher)
+            ->orderBy('g.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\NotificationRecipients;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,24 @@ class NotificationRecipientsRepository extends ServiceEntityRepository
         parent::__construct($registry, NotificationRecipients::class);
     }
 
-    //    /**
-    //     * @return NotificationRecipients[] Returns an array of NotificationRecipients objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('n')
-    //            ->andWhere('n.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('n.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByUser(User $user): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('r.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?NotificationRecipients
-    //    {
-    //        return $this->createQueryBuilder('n')
-    //            ->andWhere('n.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function countUnreadByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->andWhere('r.user = :user')
+            ->andWhere('r.is_read = false')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

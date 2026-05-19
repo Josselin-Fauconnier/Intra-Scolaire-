@@ -17,7 +17,7 @@ class Absences
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'absences')]
+    #[ORM\ManyToOne]
     private ?Documents $document = null;
 
     #[ORM\Column]

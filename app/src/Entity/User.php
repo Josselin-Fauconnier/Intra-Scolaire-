@@ -311,7 +311,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->documents->contains($document)) {
             $this->documents->add($document);
-            $document->setUserId($this);
+            $document->setUser($this);
         }
 
         return $this;
@@ -321,8 +321,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->documents->removeElement($document)) {
             // set the owning side to null (unless already changed)
-            if ($document->getUserId() === $this) {
-                $document->setUserId(null);
+            if ($document->getUser() === $this) {
+                $document->setUser(null);
             }
         }
 

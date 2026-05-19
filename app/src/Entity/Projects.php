@@ -137,7 +137,7 @@ class Projects
     {
         if (!$this->grades->contains($grade)) {
             $this->grades->add($grade);
-            $grade->setProjectId($this);
+            $grade->setProject($this);
         }
 
         return $this;
@@ -147,8 +147,8 @@ class Projects
     {
         if ($this->grades->removeElement($grade)) {
             // set the owning side to null (unless already changed)
-            if ($grade->getProjectId() === $this) {
-                $grade->setProjectId(null);
+            if ($grade->getProject() === $this) {
+                $grade->setProject(null);
             }
         }
 

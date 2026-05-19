@@ -11,6 +11,7 @@ use App\Repository\GradesRepository;
 use App\Repository\ProjectsRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,14 +23,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ProjectsController extends AbstractController
 {
     #[Route(name: 'app_projects_index', methods: ['GET'])]
-    public function index(ProjectsRepository $projectsRepository): Response
+    public function index(ProjectsRepository $projectsRepository, PaginatorInterface $paginator, Request $request): Response
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_STUDENT')) {
-            $projects = $projectsRepository->findByStudent($user);
-        } else
-            $projects = $projectsRepository->findAll();
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $data = $projectsRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $data = $projectsRepository->findByTeacher($user);
+        } else {
+            $data = $projectsRepository->findByStudent($user);
+        }
+
+        $projects = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         return $this->render('projects/index.html.twig', [
             'projects' => $projects,

@@ -252,3 +252,147 @@ docker compose up -d --build
 docker compose exec app composer install
 ```
 Le `composer install` est obligatoire au premier démarrage pour peupler le volume `app_vendor` qui démarre vide.
+
+### 2026/05/16 - Josselin
+
+
+
+**Correct-1 — `User.addDocument()` / `removeDocument()` appelaient des méthodes inexistantes**
+
+`User.php` appelait `$document->setUserId()` et `getUserId()` alors que l'entité `Documents` avait été refactorée pour exposer `setUser()` / `getUser()`. Correction dans les deux méthodes.
+
+Fichier modifié : `src/Entity/User.php`
+
+**Correct-2 — `Grades.update_history` : colonne NOT NULL remplie manuellement via le form**
+
+La colonne `update_history` est non-nullable en base (`#[ORM\Column]` sans `nullable: true`) mais le champ était exposé dans `GradesType` avec `required: false`. Soumettre le formulaire sans le remplir provoquait une erreur DB.
+
+Correction :
+- Suppression du champ `update_history` du formulaire `GradesType.php`
+- Auto-remplissage via `$grade->setUpdateHistory(new \DateTime())` dans `GradesController` avant `persist()` (création) et avant `flush()` (modification)
+- Suppression de l'import `DateTimeType` devenu inutile dans `GradesType.php`
+
+Fichiers modifiés : `src/Form/GradesType.php`, `src/Controller/GradesController.php`
+
+**Correct-3 — Typo `getPrmotionId()` / `setPrmotionId()` propagée sur 3 fichiers**
+
+Un "o" manquant dans "Promotion" lors de la génération make:crud. Renommé en `getPromotionId()` / `setPromotionId()` et mis à jour partout.
+
+Fichiers modifiés : `src/Entity/Projects.php`, `src/Entity/Promotions.php`, `src/Form/ProjectsType.php`
+
+**Correct-4 — Mapping Doctrine sur `Absences.document`**
+
+`Absences.php` déclarait `inversedBy: 'absences'` sur la relation vers `Documents`, mais `Documents` n'a pas de collection `$absences`. Mapping invalide pouvant causer une `MappingException` Doctrine. Remplacé par une relation unidirectionnelle (suppression de `inversedBy`).
+
+Fichier modifié : `src/Entity/Absences.php`
+
+
+
+
+**Correct-5 — Filtrage des données par rôle dans les listes**
+
+Les index de Grades, Absences, Projects et Promotions appelaient `findAll()` sans restriction : un étudiant voyait les notes et absences de tous les autres utilisateurs.
+
+Ajout de méthodes filtrées dans les repositories :
+- `findByStudent(User)` : retourne uniquement les données liées à l'utilisateur connecté
+- `findByTeacher(User)` : retourne uniquement les données des promotions dont l'utilisateur est professeur
+- `findAll()` reste utilisé pour les admins uniquement
+
+Logique ajoutée dans les controllers : ROLE_ADMIN → tout, ROLE_TEACHER → ses données, autre → ses données personnelles.
+
+Fichiers modifiés : `src/Repository/GradesRepository.php`, `src/Repository/AbsencesRepository.php`, `src/Repository/ProjectsRepository.php`, `src/Repository/PromotionsRepository.php`, `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`
+
+**Correct-06 — Vérification d'appartenance sur les promotions**
+
+N'importe quel professeur pouvait modifier ou supprimer la promotion d'un autre prof en changeant l'ID dans l'URL. Ajout d'un contrôle d'appartenance dans `edit()` et `delete()` de `PromotionsController` : si l'utilisateur n'est pas admin et n'est pas le professeur de la promotion, une exception 403 est levée.
+
+Fichier modifié : `src/Controller/PromotionsController.php`
+
+**Correct-7 — Filtrage des sélecteurs EntityType par rôle**
+
+Les formulaires de création de promotions, notes et absences listaient tous les utilisateurs sans distinction de rôle . Ajout d'un `query_builder` avec filtre `LIKE '%ROLE_TEACHER%'` ou `LIKE '%ROLE_STUDENT%'` selon le contexte.
+
+Fichiers modifiés : `src/Form/PromotionsType.php`, `src/Form/GradesType.php`, `src/Form/AbsencesType.php`
+
+
+### 2026/05/17 - Josselin
+
+#### Filtrage des sélecteurs de projet et de document
+
+**Sélecteur `project` dans `GradesType`**
+
+Le formulaire de création de note listait tous les projets de toutes les promotions. Un professeur pouvait attribuer une note sur un projet d'un collègue. Ajout d'un `query_builder` avec `current_user` passé en option depuis le controller : un prof ne voit que les projets de ses propres promotions, un admin voit tout.
+
+Fichiers modifiés : `src/Form/GradesType.php`, `src/Controller/GradesController.php`
+
+**Sélecteur `document` dans `AbsencesType`**
+
+Le formulaire de saisie d'absence listait tous les documents uploadés par tous les utilisateurs. Ajout d'un `query_builder` filtrant uniquement les documents appartenant à des étudiants (`ROLE_STUDENT`). Le `choice_label` affiche désormais `"Nom Prénom — Titre"` pour identifier l'étudiant propriétaire du justificatif.
+
+Fichier modifié : `src/Form/AbsencesType.php`
+
+#### Pagination sur Grades, Absences, Projects, Promotions
+
+La pagination KnpPaginator était uniquement présente sur Documents. Les autres listes appelaient `findAll()` sans aucune limite.
+
+Ajout de `PaginatorInterface` dans les 4 controllers et ajout de `{{ knp_pagination_render(...) }}` dans les 4 templates. Limite fixée à 10 éléments par page.
+
+Fichiers modifiés : `src/Controller/GradesController.php`, `src/Controller/AbsencesController.php`, `src/Controller/ProjectsController.php`, `src/Controller/PromotionsController.php`, `templates/grades/index.html.twig`, `templates/absences/index.html.twig`, `templates/projects/index.html.twig`, `templates/promotions/index.html.twig`
+
+### 2026/05/18 - Josselin
+
+#### correc 1  — Comparaison d'objet dans `NotificationsController.markRead()`
+
+`markRead()` vérifiait l'appartenance du destinataire avec `$recipient->getUserId() !== $this->getUser()` — comparaison de références d'objets PHP, pas d'IDs. Même bogue que SEC-02 (PromotionsController). Dans un seul cycle de requête Doctrine l'identity map garantit généralement la même référence, mais c'est fragile et non garanti.
+
+Correction : comparaison des IDs entiers.
+
+```php
+// Avant
+if ($recipient->getUserId() !== $this->getUser())
+
+// Après
+if ($recipient->getUserId()?->getId() !== $this->getUser()->getId())
+```
+
+Fichier modifié : `src/Controller/NotificationsController.php`
+
+#### correct 2 — `show()` sans vérification d'appartenance dans `NotificationsController`
+
+`show()` acceptait n'importe quel `ROLE_USER` sur `/notifications/{id}` même si l'utilisateur n'était pas destinataire de la notification. Ajout d'un contrôle via `findOneBy(['notification' => ..., 'user' => ...])` : si aucun `NotificationRecipients` n'existe pour cet utilisateur, une exception 403 est levée.
+
+Fichier modifié : `src/Controller/NotificationsController.php`
+
+
+#### correct 2 — Ciblage des notifications par audience et par rôle expéditeur
+
+Le formulaire de création envoyait la notification à tous les utilisateurs (`findAll()`), sans distinction de rôle ni de promotion.
+
+**Champs ajoutés dans `NotificationsType` (`mapped: false`) :**
+- `audience` (ChoiceType) : choix du groupe destinataire
+- `promotion` (EntityType, optionnel) : promotion cible si `audience = promotion`
+
+**Logique d'audience selon le rôle de l'expéditeur :**
+
+| Expéditeur | Choix disponibles | Promotions visibles |
+|---|---|---|
+| Admin | Tous / Étudiants / Professeurs / Une promotion | Toutes |
+| Enseignant | Une promotion uniquement | Les siennes seulement |
+
+Dans `NotificationsController::new()`, un `match` sur `audience` choisit les destinataires :
+- `all` → `findAll()`
+- `students` → `findByRole('ROLE_STUDENT')`
+- `teachers` → `findByRole('ROLE_TEACHER')`
+- `promotion` → membres via `getpromotionUsers()`
+
+Validation serveur : un enseignant qui tenterait d'envoyer à une autre audience ou à une promotion ne lui appartenant pas reçoit un 403.
+
+Ajout de `findByRole(string $role): array` dans `UserRepository`.
+
+Fichiers modifiés : `src/Form/NotificationsType.php`, `src/Controller/NotificationsController.php`, `src/Repository/UserRepository.php`
+
+#### correct 3 — Pagination de la liste des notifications (5 par page)
+
+`index()` chargeait toutes les notifications d'un utilisateur sans limite via `findByUser()`. Ajout de KnpPaginator avec une limite de 5 par page et `{{ knp_pagination_render(recipients) }}` dans le template.
+
+Fichiers modifiés : `src/Controller/NotificationsController.php`, `templates/notifications/index.html.twig`

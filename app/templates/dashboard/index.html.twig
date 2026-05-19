@@ -61,6 +61,17 @@
                     <i class="bi bi-kanban"></i> Projets
                 </a>
             </li>
+            <li>
+                <a href="{{ path('app_notifications_index') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-bell"></i> Notifications
+                    {% set unreadCount = unread_notifications_count() %}
+                    {% if unreadCount > 0 %}
+                        <span class="badge bg-danger ms-auto">{{ unreadCount }}</span>
+                    {% endif %}
+                </a>
+            </li>
 
             {% if is_granted('ROLE_ADMIN') %}
             <li class="nav-section" style="margin-top: 8px;">Administration</li>

@@ -32,7 +32,7 @@ final class DocumentsController extends AbstractController
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            5 // 5 documents par page
+            20
         );
 
         return $this->render('documents/index.html.twig', [
@@ -126,6 +126,11 @@ final class DocumentsController extends AbstractController
     public function delete(Request $request, Documents $document, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->getPayload()->getString('_token'))) {
+            $path = $this->getParameter('documents_directory') . '/' . $document->getPath();
+            if ($document->getPath() && file_exists($path)) {
+                unlink($path);
+            }
+
             $entityManager->remove($document);
             $entityManager->flush();
         }
