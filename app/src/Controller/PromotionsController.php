@@ -45,6 +45,8 @@ final class PromotionsController extends AbstractController
         $form = $this->createForm(PromotionsType::class, $promotion);
         $form->handleRequest($request);
 
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($promotion);
             $entityManager->flush();
@@ -97,7 +99,7 @@ final class PromotionsController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres promotions.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $promotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotion);
             $entityManager->flush();
         }

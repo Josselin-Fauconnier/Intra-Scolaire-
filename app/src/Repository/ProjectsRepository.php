@@ -32,7 +32,7 @@ class ProjectsRepository extends ServiceEntityRepository
     public function findByTeacher(User $teacher): array
     {
         return $this->createQueryBuilder('p')
-            ->join('p.promotion', 'pr')
+            ->join('p.promotions', 'pr')
             ->where('pr.professor = :teacher')
             ->setParameter('teacher', $teacher)
             ->orderBy('p.id', 'DESC')

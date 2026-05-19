@@ -33,7 +33,7 @@ class Promotions
     /**
      * @var Collection<int, Projects>
      */
-    #[ORM\ManyToMany(targetEntity: Projects::class, mappedBy: 'Promotions')]
+    #[ORM\ManyToMany(targetEntity: Projects::class, mappedBy: 'promotions')]
     private Collection $projects;
 
 
@@ -61,12 +61,12 @@ class Promotions
         return $this;
     }
 
-    public function getProfessorId(): ?User
+    public function getProfessor(): ?User
     {
         return $this->professor;
     }
 
-    public function setProfessorId(?User $professor): static
+    public function setProfessor(?User $professor): static
     {
         $this->professor = $professor;
 
