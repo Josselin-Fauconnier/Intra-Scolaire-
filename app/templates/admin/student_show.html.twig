@@ -1,0 +1,171 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ student.firstname }} {{ student.lastname }}{% endblock %}
+
+{% block body %}
+<turbo-frame id="main-frame">
+
+    {# ── En-tête ── #}
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="mb-1">{{ student.firstname }} {{ student.lastname }}</h2>
+            <div class="d-flex gap-1 flex-wrap mb-2">
+                {% for pu in student.promotionUsers %}
+                    <span class="badge bg-secondary">{{ pu.promotion.name }}</span>
+                {% endfor %}
+            </div>
+            <div class="d-flex gap-3 flex-wrap text-muted small">
+                <span><i class="bi bi-envelope"></i> <a href="mailto:{{ student.email }}">{{ student.email }}</a></span>
+                {% if student.phoneNumber %}
+                    <span><i class="bi bi-telephone"></i> {{ student.phoneNumber }}</span>
+                {% endif %}
+                {% if student.github %}
+                    <span><i class="bi bi-github"></i> <a href="{{ student.github }}" target="_blank">GitHub</a></span>
+                {% endif %}
+                {% if student.googleDrive %}
+                    <span><i class="bi bi-folder2-open"></i> <a href="{{ student.googleDrive }}" target="_blank">Google Drive</a></span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            {% if is_granted('ROLE_ADMIN') %}
+            <form method="post"
+                  action="{{ path('app_admin_set_role', {'id': student.id}) }}"
+                  class="d-flex gap-1">
+                <input type="hidden" name="_token" value="{{ csrf_token('set_role_' ~ student.id) }}">
+                <select name="role" class="form-select form-select-sm" style="width: auto;">
+                    <option value="ROLE_STUDENT" {% if 'ROLE_STUDENT' in student.roles %}selected{% endif %}>Étudiant</option>
+                    <option value="ROLE_TEACHER" {% if 'ROLE_TEACHER' in student.roles %}selected{% endif %}>Professeur</option>
+                    <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in student.roles %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
+            </form>
+            {% endif %}
+            <a href="{{ path('app_admin_users') }}" class="btn btn-outline-secondary btn-sm" data-turbo-frame="main-frame">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        {# ── Notes ── #}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-clipboard-check"></i>
+                    <strong>Notes</strong>
+                    <span class="badge bg-secondary ms-auto">{{ student.grades|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if student.grades is empty %}
+                        <p class="text-muted text-center py-3 mb-0">Aucune note enregistrée.</p>
+                    {% else %}
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Projet</th>
+                                    <th>Statut</th>
+                                    <th>Note</th>
+                                    <th>Commentaire</th>
+                                    <th>Rendu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for grade in student.grades %}
+                                <tr>
+                                    <td>{{ grade.project.title }}</td>
+                                    <td>
+                                        {% if grade.status.value == 'note' %}
+                                            <span class="badge bg-success">Noté</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">En attente</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ grade.grade ?? '—' }}</td>
+                                    <td>{{ grade.comments ?? '—' }}</td>
+                                    <td>
+                                        {% if grade.submission %}
+                                            <a href="{{ grade.submission }}" target="_blank" class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1">
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── Documents ── #}
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <strong>Documents</strong>
+                    <span class="badge bg-secondary ms-auto">{{ student.documents|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if student.documents is empty %}
+                        <p class="text-muted text-center py-3 mb-0">Aucun document.</p>
+                    {% else %}
+                        <ul class="list-group list-group-flush">
+                        {% for doc in student.documents %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                    {{ doc.title }}
+                                </span>
+                                {% if doc.path %}
+                                    <a href="/uploads/{{ doc.path }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-1">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── Absences ── #}
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-x"></i>
+                    <strong>Absences</strong>
+                    <span class="badge bg-secondary ms-auto">{{ student.absences|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if student.absences is empty %}
+                        <p class="text-muted text-center py-3 mb-0">Aucune absence.</p>
+                    {% else %}
+                        <ul class="list-group list-group-flush">
+                        {% for absence in student.absences %}
+                            <li class="list-group-item">
+                                <i class="bi bi-calendar-event text-muted"></i>
+                                {{ absence.startDate|date('d/m/Y') }}
+                                {% if absence.endDate and absence.endDate != absence.startDate %}
+                                    → {{ absence.endDate|date('d/m/Y') }}
+                                {% endif %}
+                                {% if absence.documentId %}
+                                    <span class="badge bg-info ms-2">Justifiée</span>
+                                {% else %}
+                                    <span class="badge bg-danger ms-2">Non justifiée</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</turbo-frame>
+{% endblock %}

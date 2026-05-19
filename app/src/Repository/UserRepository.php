@@ -42,4 +42,48 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    public function findNonStudents(): array
+    {
+        $users = $this->createQueryBuilder('u')
+            ->orderBy('u.lastname', 'ASC')
+            ->addOrderBy('u.firstname', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return array_values(array_filter($users, fn(User $u) => !in_array('ROLE_STUDENT', $u->getRoles(), true)));
+    }
+
+    public function findStudents(?User $teacher = null, string $search = '', ?int $promotionId = null): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->join('u.promotionUsers', 'pu')
+            ->join('pu.promotion', 'pr')
+            ->orderBy('u.lastname', 'ASC')
+            ->addOrderBy('u.firstname', 'ASC');
+
+        if ($teacher !== null) {
+            $qb->andWhere('pr.professor = :teacher')
+               ->setParameter('teacher', $teacher);
+        }
+
+        if ($promotionId !== null) {
+            $qb->andWhere('pr.id = :promo')
+               ->setParameter('promo', $promotionId);
+        }
+
+        if ($search !== '') {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->like('LOWER(u.firstname)', ':search'),
+                    $qb->expr()->like('LOWER(u.lastname)', ':search'),
+                    $qb->expr()->like('LOWER(u.email)', ':search')
+                )
+            )->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        $users = $qb->groupBy('u.id')->getQuery()->getResult();
+
+        return array_values(array_filter($users, fn(User $u) => in_array('ROLE_STUDENT', $u->getRoles(), true)));
+    }
 }

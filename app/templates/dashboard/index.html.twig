@@ -73,10 +73,20 @@
                 </a>
             </li>
 
+            {% if is_granted('ROLE_TEACHER') %}
+            <li>
+                <a href="{{ path('app_admin_users') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-people-fill"></i> Étudiants
+                </a>
+            </li>
+            {% endif %}
+
             {% if is_granted('ROLE_ADMIN') %}
             <li class="nav-section" style="margin-top: 8px;">Administration</li>
             <li>
-                <a href="{{ path('app_promotion_users_index') }}"
+                <a href="{{ path('app_admin_members') }}"
                    class="sidebar-link"
                    data-turbo-frame="main-frame">
                     <i class="bi bi-people"></i> Membres
