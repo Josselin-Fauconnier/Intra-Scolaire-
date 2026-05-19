@@ -79,7 +79,13 @@ final class ProjectsController extends AbstractController
         ]);
 
         if (!$grade) {
-            throw $this->createNotFoundException('Grade introuvable');
+            $grade = new Grades();
+            $grade->setProject($project);
+            $grade->setStudent($this->getUser());
+            $grade->setStatus(GradeStatus::PENDING);
+            $grade->setUpdateHistory(new DateTime());
+            $entityManager->persist($grade);
+            $entityManager->flush();
         }
 
         $form = $this->createForm(GradeSubmission::class, $grade);
