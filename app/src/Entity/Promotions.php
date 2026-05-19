@@ -33,8 +33,10 @@ class Promotions
     /**
      * @var Collection<int, Projects>
      */
-    #[ORM\OneToMany(targetEntity: Projects::class, mappedBy: 'promotion')]
+    #[ORM\ManyToMany(targetEntity: Projects::class, mappedBy: 'Promotions')]
     private Collection $projects;
+
+
 
     public function __construct()
     {
@@ -109,7 +111,7 @@ class Promotions
         return $this->projects;
     }
 
-    public function addProject(Projects $project): static
+    /* public function addProject(Projects $project): static
     {
         if (!$this->projects->contains($project)) {
             $this->projects->add($project);
@@ -126,6 +128,25 @@ class Promotions
             if ($project->getPromotion() === $this) {
                 $project->setPromotion(null);
             }
+        }
+
+        return $this;
+    } */
+
+    public function addProject(Projects $project): static
+    {
+        if (!$this->projects->contains($project)) {
+            $this->projects->add($project);
+            $project->addPromotion($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProject(Projects $project): static
+    {
+        if ($this->projects->removeElement($project)) {
+            $project->removePromotion($this);
         }
 
         return $this;
