@@ -22,7 +22,7 @@ final class PromotionsController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $promotionsRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $promotionsRepository->findByTeacher($user);
@@ -97,7 +97,7 @@ final class PromotionsController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres promotions.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $promotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotion);
             $entityManager->flush();
         }

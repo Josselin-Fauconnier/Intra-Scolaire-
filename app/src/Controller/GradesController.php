@@ -22,7 +22,7 @@ final class GradesController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $gradesRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $gradesRepository->findByTeacher($user);
