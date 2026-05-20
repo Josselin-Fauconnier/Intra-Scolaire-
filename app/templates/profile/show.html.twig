@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+<turbo-frame id="main-frame">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Mon profil</h2>
+        <a href="{{ path('app_profile_edit') }}" class="btn btn-warning btn-sm">
+            <i class="bi bi-pencil"></i> Modifier
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <table class="table">
+        <tbody>
+            <tr><th>Email</th><td>{{ user.email }}</td></tr>
+            <tr><th>Prénom</th><td>{{ user.firstname }}</td></tr>
+            <tr><th>Nom</th><td>{{ user.lastname }}</td></tr>
+            <tr><th>Rôle</th><td>
+                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_TEACHER') %}Professeur
+                {% else %}Étudiant{% endif %}
+            </td></tr>
+            <tr><th>Téléphone</th><td>{{ user.phoneNumber ?? '—' }}</td></tr>
+            <tr><th>GitHub</th><td>
+                {% if user.github %}
+                    <a href="{{ user.github }}" target="_blank">{{ user.github }}</a>
+                {% else %}—{% endif %}
+            </td></tr>
+            <tr><th>Google Drive</th><td>
+                {% if user.googleDrive %}
+                    <a href="{{ user.googleDrive }}" target="_blank">{{ user.googleDrive }}</a>
+                {% else %}—{% endif %}
+            </td></tr>
+        </tbody>
+    </table>
+</turbo-frame>
+{% endblock %}

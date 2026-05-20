@@ -22,7 +22,7 @@ final class GradesController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $gradesRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $gradesRepository->findByTeacher($user);
@@ -37,7 +37,7 @@ final class GradesController extends AbstractController
         ]);
     }
 
-    /* #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_grades_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -59,7 +59,7 @@ final class GradesController extends AbstractController
             'grade' => $grade,
             'form' => $form,
         ]);
-    } */
+    }
 
     #[Route('/{id}', name: 'app_grades_show', methods: ['GET'])]
     public function show(Grades $grade): Response

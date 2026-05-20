@@ -17,14 +17,16 @@
             <span class="user-role">
                 {% if is_granted('ROLE_ADMIN') %}Administrateur
                 {% elseif is_granted('ROLE_TEACHER') %}Professeur
+                {% elseif is_granted('ROLE_VISITOR') %}Visiteur
                 {% else %}Étudiant{% endif %}
+
             </span>
         </div>
 
         <ul class="sidebar-nav">
             <li class="nav-section">Navigation</li>
 
-            {% if is_granted('ROLE_ADMIN') %}
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_VISITOR') %}
             <li>
                 <a href="{{ path('app_promotions_index') }}"
                    class="sidebar-link"
@@ -73,10 +75,20 @@
                 </a>
             </li>
 
+            {% if is_granted('ROLE_TEACHER') %}
+            <li>
+                <a href="{{ path('app_admin_users') }}"
+                   class="sidebar-link"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-people-fill"></i> Étudiants
+                </a>
+            </li>
+            {% endif %}
+
             {% if is_granted('ROLE_ADMIN') %}
             <li class="nav-section" style="margin-top: 8px;">Administration</li>
             <li>
-                <a href="{{ path('app_promotion_users_index') }}"
+                <a href="{{ path('app_admin_members') }}"
                    class="sidebar-link"
                    data-turbo-frame="main-frame">
                     <i class="bi bi-people"></i> Membres
@@ -86,6 +98,11 @@
         </ul>
 
         <div class="sidebar-footer">
+            <a href="{{ path('app_profile') }}"
+               class="sidebar-link"
+               data-turbo-frame="main-frame">
+                <i class="bi bi-person-circle"></i> Mon profil
+            </a>
             <a href="{{ logout_path() }}">
                 <i class="bi bi-box-arrow-left"></i> Déconnexion
             </a>
