@@ -6,9 +6,6 @@
 <turbo-frame id="main-frame">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Notes</h2>
-        {% if is_granted('ROLE_TEACHER') %}
-            <a href="{{ path('app_grades_new') }}" class="btn btn-success btn-sm">+ Nouvelle note</a>
-        {% endif %}
     </div>
 
     <table class="table table-hover">
