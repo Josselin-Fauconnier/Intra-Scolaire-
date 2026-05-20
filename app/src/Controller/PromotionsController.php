@@ -72,7 +72,7 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessor()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres promotions.');
         }
 
@@ -95,7 +95,7 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessor()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres promotions.');
         }
 

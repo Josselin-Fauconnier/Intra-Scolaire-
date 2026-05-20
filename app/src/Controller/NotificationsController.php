@@ -75,7 +75,7 @@ final class NotificationsController extends AbstractController
                 if ($audience !== 'promotion') {
                     throw $this->createAccessDeniedException();
                 }
-                if ($promotion !== null && $promotion->getProfessorId()?->getId() !== $currentUser->getId()) {
+                if ($promotion !== null && $promotion->getProfessor()?->getId() !== $currentUser->getId()) {
                     throw $this->createAccessDeniedException();
                 }
             }
