@@ -18,6 +18,18 @@
         </tbody>
     </table>
 
+    <ul>
+    {% for project in promotion.projects %}
+        <li>
+            <a href="{{ path('app_projects_show', {'id': project.id}) }}">
+                {{ project.title }}
+            </a>
+        </li>
+    {% else %}
+        <li>Aucun projet</li>
+    {% endfor %}
+    </ul>
+
     {% if is_granted('ROLE_TEACHER') %}
         <a href="{{ path('app_promotions_edit', {'id': promotion.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
         {{ include('promotions/_delete_form.html.twig') }}
