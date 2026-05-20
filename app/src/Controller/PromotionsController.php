@@ -22,7 +22,7 @@ final class PromotionsController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $promotionsRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $promotionsRepository->findByTeacher($user);

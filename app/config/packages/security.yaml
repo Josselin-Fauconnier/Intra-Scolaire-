@@ -25,7 +25,7 @@ security:
             custom_authenticator: App\Security\AppAuthenticator
 
             remember_me:
-                secret: '%kernel.secret%'
+                secret: "%kernel.secret%"
                 lifetime: 604800
                 path: /
                 # by default, the feature is enabled by checking a checkbox in the
@@ -47,9 +47,10 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
 
     role_hierarchy:
+        ROLE_VISITOR: ROLE_USER
         ROLE_TEACHER: ROLE_USER
         ROLE_STUDENT: ROLE_USER
-        ROLE_ADMIN: [ROLE_TEACHER, ROLE_STUDENT, ROLE_USER]
+        ROLE_ADMIN: [ROLE_TEACHER, ROLE_STUDENT, ROLE_VISITOR]
 
 when@test:
     security:

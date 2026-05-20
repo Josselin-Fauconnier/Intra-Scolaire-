@@ -22,7 +22,7 @@ final class PromotionUsersController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $promotionUsersRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
             $data = $promotionUsersRepository->findByTeacher($user);
@@ -89,7 +89,7 @@ final class PromotionUsersController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, PromotionUsers $promotionUser, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$promotionUser->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $promotionUser->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotionUser);
             $entityManager->flush();
         }
