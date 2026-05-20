@@ -20,8 +20,8 @@ class ProjectsRepository extends ServiceEntityRepository
     public function findByStudent(User $student): array
     {
         return $this->createQueryBuilder('p')
-            ->join('p.promotion', 'pr')
-            ->join('pr.promotionUsers', 'pu')
+            ->join('p.promotions', 'promo')
+            ->join('promo.promotionUsers', 'pu')
             ->where('pu.user = :student')
             ->setParameter('student', $student)
             ->orderBy('p.id', 'DESC')
@@ -32,7 +32,7 @@ class ProjectsRepository extends ServiceEntityRepository
     public function findByTeacher(User $teacher): array
     {
         return $this->createQueryBuilder('p')
-            ->join('p.promotion', 'pr')
+            ->join('p.promotions', 'pr')
             ->where('pr.professor = :teacher')
             ->setParameter('teacher', $teacher)
             ->orderBy('p.id', 'DESC')

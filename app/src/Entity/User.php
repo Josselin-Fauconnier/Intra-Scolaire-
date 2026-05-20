@@ -251,7 +251,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->promotions->contains($promotion)) {
             $this->promotions->add($promotion);
-            $promotion->setProfessorId($this);
+            $promotion->setProfessor($this);
         }
 
         return $this;
@@ -261,8 +261,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->promotions->removeElement($promotion)) {
             // set the owning side to null (unless already changed)
-            if ($promotion->getProfessorId() === $this) {
-                $promotion->setProfessorId(null);
+            if ($promotion->getProfessor() === $this) {
+                $promotion->setProfessor(null);
             }
         }
 

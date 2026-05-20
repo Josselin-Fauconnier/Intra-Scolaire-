@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProjectsRepository::class)]
-#[UniqueEntity(fields: ['promotion', 'title'], message: "Ce projet existe déjà pour cette promotion.", errorPath: 'title')]
+#[UniqueEntity(fields: ['title'], message: "Ce projet existe déjà pour cette promotion.", errorPath: 'title')]
 class Projects
 {
     #[ORM\Id]
@@ -18,9 +18,9 @@ class Projects
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'projects')]
+    /* #[ORM\ManyToOne(inversedBy: 'projects')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Promotions $promotion = null;
+    private ?Promotions $promotion = null; */
 
     #[ORM\Column(length: 255)]
     private string $title = '';
@@ -43,9 +43,16 @@ class Projects
     #[ORM\OneToMany(targetEntity: Grades::class, mappedBy: 'project', orphanRemoval: true)]
     private Collection $grades;
 
+    /**
+     * @var Collection<int, promotions>
+     */
+    #[ORM\ManyToMany(targetEntity: Promotions::class, inversedBy: 'projects')]
+    private Collection $promotions;
+
     public function __construct()
     {
         $this->grades = new ArrayCollection();
+        $this->promotions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -53,17 +60,6 @@ class Projects
         return $this->id;
     }
 
-    public function getPromotion(): ?Promotions
-    {
-        return $this->promotion;
-    }
-
-    public function setPromotion(?Promotions $promotion): static
-    {
-        $this->promotion = $promotion;
-
-        return $this;
-    }
 
     public function getTitle(): ?string
     {
@@ -151,6 +147,30 @@ class Projects
                 $grade->setProject(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Promotions>
+     */
+    public function getPromotions(): Collection
+    {
+        return $this->promotions;
+    }
+
+    public function addPromotion(Promotions $promotion): static
+    {
+        if (!$this->promotions->contains($promotion)) {
+            $this->promotions->add($promotion);
+        }
+
+        return $this;
+    }
+
+    public function removePromotion(Promotions $promotion): static
+    {
+        $this->promotions->removeElement($promotion);
 
         return $this;
     }

@@ -45,6 +45,8 @@ final class PromotionsController extends AbstractController
         $form = $this->createForm(PromotionsType::class, $promotion);
         $form->handleRequest($request);
 
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($promotion);
             $entityManager->flush();
@@ -70,7 +72,7 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessor()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres promotions.');
         }
 
@@ -93,11 +95,11 @@ final class PromotionsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Promotions $promotion, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessorId()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $promotion->getProfessor()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres promotions.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $promotion->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotion);
             $entityManager->flush();
         }

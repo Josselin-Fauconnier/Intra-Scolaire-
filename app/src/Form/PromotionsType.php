@@ -2,9 +2,9 @@
 
 namespace App\Form;
 
+use App\Entity\Projects;
 use App\Entity\Promotions;
 use App\Entity\User;
-use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -18,12 +18,12 @@ class PromotionsType extends AbstractType
             ->add('name')
             ->add('professor', EntityType::class, [
                 'class' => User::class,
-                'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'property_path' => 'professorId',
-                'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
-                    ->where('u.roles LIKE :role')
-                    ->setParameter('role', '%ROLE_TEACHER%')
-                    ->orderBy('u.lastname', 'ASC'),
+                'choice_label' => 'id',
+            ])
+            ->add('projects', EntityType::class, [
+                'class' => Projects::class,
+                'choice_label' => 'id',
+                'multiple' => true,
             ])
         ;
     }

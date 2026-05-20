@@ -31,7 +31,7 @@ class GradesRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('g')
             ->join('g.project', 'p')
-            ->join('p.promotion', 'pr')
+            ->join('p.promotions', 'pr')
             ->where('pr.professor = :teacher')
             ->setParameter('teacher', $teacher)
             ->orderBy('g.id', 'DESC')
