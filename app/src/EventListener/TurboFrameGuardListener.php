@@ -11,7 +11,7 @@ use Symfony\Component\Routing\RouterInterface;
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 5)]
 class TurboFrameGuardListener
 {
-    private const PUBLIC_ROUTES = ['app_dashboard', 'app_login', 'app_register', 'app_logout', 'app_profile', 'app_profile_edit', 'app_admin_users', 'app_admin_set_role', 'app_students_show', 'app_admin_members', 'app_admin_members_new'];
+    private const PUBLIC_ROUTES = ['app_dashboard', 'app_login', 'app_register', 'app_logout', 'app_profile', 'app_profile_edit', 'app_admin_users', 'app_admin_set_role', 'app_students_show', 'app_admin_members', 'app_admin_members_new', 'app_profile_password'];
 
     public function __construct(private RouterInterface $router) {}
 
