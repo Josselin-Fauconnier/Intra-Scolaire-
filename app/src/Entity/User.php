@@ -203,6 +203,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getFullName(): string
+    {
+        return sprintf('%s %s', $this->firstname, $this->lastname);
+    }
+
     public function getPhoneNumber(): ?string
     {
         return $this->phone_number;
@@ -281,7 +286,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->promotionUsers->contains($promotionUser)) {
             $this->promotionUsers->add($promotionUser);
-            $promotionUser->setUserId($this);
+            $promotionUser->setUser($this);
         }
 
         return $this;
@@ -291,8 +296,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promotionUser->getUserId() === $this) {
-                $promotionUser->setUserId(null);
+            if ($promotionUser->getUser() === $this) {
+                $promotionUser->setUser(null);
             }
         }
 
