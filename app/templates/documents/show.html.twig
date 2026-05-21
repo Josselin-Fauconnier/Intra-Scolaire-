@@ -41,13 +41,13 @@
                         <i class="bi bi-download"></i> Télécharger
                     </a>
                 {% endif %}
-                {% if is_granted('ROLE_TEACHER') %}
+                {% if is_granted('ROLE_TEACHER')or is_granted('ROLE_STUDENT') %}
                     <a href="{{ path('app_documents_edit', {'id': document.id}) }}" class="btn btn-warning btn-sm">
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
                 {% endif %}
             </div>
-            {% if is_granted('ROLE_TEACHER') %}
+            {% if is_granted('ROLE_TEACHER') or is_granted('ROLE_STUDENT')%}
                 <div>{{ include('documents/_delete_form.html.twig') }}</div>
             {% endif %}
         </div>
