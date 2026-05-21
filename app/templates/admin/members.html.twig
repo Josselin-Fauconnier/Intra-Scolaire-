@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Membres{% endblock %}
+
+{% block body %}
+<turbo-frame id="main-frame">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Membres</h2>
+        <a href="{{ path('app_admin_members_new') }}"
+           class="btn btn-success btn-sm"
+           data-turbo-frame="main-frame">
+            <i class="bi bi-person-plus"></i> Ajouter un membre
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="list-group">
+        {% for member in members %}
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                <div>
+                    <span class="fw-semibold">{{ member.lastname }} {{ member.firstname }}</span>
+                    <small class="text-muted ms-2">{{ member.email }}</small>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    {% if 'ROLE_ADMIN' in member.roles %}
+                        <span class="badge bg-danger">Admin</span>
+                    {% elseif 'ROLE_TEACHER' in member.roles %}
+                        <span class="badge bg-primary">Professeur</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Utilisateur</span>
+                    {% endif %}
+                    <form method="post"
+                          action="{{ path('app_admin_set_role', {'id': member.id}) }}"
+                          class="d-flex gap-1">
+                        <input type="hidden" name="_token" value="{{ csrf_token('set_role_' ~ member.id) }}">
+                        <input type="hidden" name="redirect" value="members">
+                        <select name="role" class="form-select form-select-sm" style="width: auto;">
+                            <option value="ROLE_TEACHER" {% if 'ROLE_TEACHER' in member.roles %}selected{% endif %}>Professeur</option>
+                            <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in member.roles %}selected{% endif %}>Admin</option>
+                            <option value="ROLE_STUDENT" {% if 'ROLE_STUDENT' in member.roles %}selected{% endif %}>Étudiant</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="list-group-item text-center text-muted py-4">Aucun membre trouvé.</div>
+        {% endfor %}
+    </div>
+
+</turbo-frame>
+{% endblock %}

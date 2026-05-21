@@ -80,7 +80,7 @@
                         <span class="type-tag" style="background-color: {{ color }};">{{ typeValue }}</span>
                     </td>
                     <td data-label="Titre" class="fw-bold">{{ document.title }}</td>
-                    <td data-label="Fichier"><code class="small text-muted">{{ document.path|default('—') }}</code></td>
+                    <td data-label="Fichier"><code class="small text-muted">{{ document.path|default('-') }}</code></td>
                     <td data-label="Actions" class="text-center">
                         <div class="table-actions">
                             <a href="{{ path('app_documents_show', {'id': document.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
@@ -104,6 +104,9 @@
             {% endfor %}
             </tbody>
         </table>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        {{ knp_pagination_render(documents) }}
     </div>
 </turbo-frame>
 {% endblock %}

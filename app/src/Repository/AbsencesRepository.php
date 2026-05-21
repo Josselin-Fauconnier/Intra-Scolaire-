@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Absences;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,26 @@ class AbsencesRepository extends ServiceEntityRepository
         parent::__construct($registry, Absences::class);
     }
 
-    //    /**
-    //     * @return Absences[] Returns an array of Absences objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByStudent(User $student): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.user = :student')
+            ->setParameter('student', $student)
+            ->orderBy('a.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Absences
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findByTeacher(User $teacher): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.user', 'u')
+            ->join('u.promotionUsers', 'pu')
+            ->join('pu.promotion', 'pr')
+            ->where('pr.professor = :teacher')
+            ->setParameter('teacher', $teacher)
+            ->orderBy('a.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -22,6 +22,22 @@
                     <th>Nom</th>
                     <td>{{ promotion.name }}</td>
                 </tr>
+                <tr>
+                    <th>Projets</th>
+                    <td>
+                        <ul>
+                        {% for project in promotion.projects %}
+                            <li>
+                                <a href="{{ path('app_projects_show', {'id': project.id}) }}">
+                                    {{ project.title }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li>Aucun projet</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

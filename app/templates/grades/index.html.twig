@@ -6,16 +6,13 @@
 <turbo-frame id="main-frame">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Notes</h2>
-        {% if is_granted('ROLE_TEACHER') %}
-            <a href="{{ path('app_grades_new') }}" class="btn btn-success btn-sm">+ Nouvelle note</a>
-        {% endif %}
     </div>
 
     <div class="responsive-table-wrapper">
         <table class="table table-hover responsive-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Projet</th>
                     <th>Note</th>
                     <th>Commentaire</th>
                     <th>Soumission</th>
@@ -27,18 +24,15 @@
             <tbody>
             {% for grade in grades %}
                 <tr>
-                    <td data-label="ID">{{ grade.id }}</td>
+                    <td data-label="Projet">{{ grade.project.title }}</td>
                     <td data-label="Note">{{ grade.grade }}</td>
                     <td data-label="Commentaire">{{ grade.comments }}</td>
                     <td data-label="Soumission">{{ grade.submission }}</td>
-                    <td data-label="Mise a jour">{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
-                    <td data-label="Statut">{{ grade.status }}</td>
+                    <td data-label="Mise a jour">{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '-' }}</td>
+                    <td data-label="Statut">{{ grade.status.value }}</td>
                     <td data-label="Actions">
                         <div class="table-actions">
                             <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
-                            {% if is_granted('ROLE_TEACHER') %}
-                                <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
-                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -49,6 +43,9 @@
             {% endfor %}
             </tbody>
         </table>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        {{ knp_pagination_render(grades) }}
     </div>
 </turbo-frame>
 {% endblock %}

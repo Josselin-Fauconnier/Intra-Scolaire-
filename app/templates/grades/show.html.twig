@@ -32,11 +32,11 @@
                 </tr>
                 <tr>
                     <th>Mise a jour</th>
-                    <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '—' }}</td>
+                    <td>{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '-' }}</td>
                 </tr>
                 <tr>
                     <th>Statut</th>
-                    <td>{{ grade.status }}</td>
+                    <td>{{ grade.status.value }}</td>
                 </tr>
             </tbody>
         </table>

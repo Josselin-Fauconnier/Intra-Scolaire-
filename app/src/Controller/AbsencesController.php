@@ -6,6 +6,7 @@ use App\Entity\Absences;
 use App\Form\AbsencesType;
 use App\Repository\AbsencesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,10 +18,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AbsencesController extends AbstractController
 {
     #[Route(name: 'app_absences_index', methods: ['GET'])]
-    public function index(AbsencesRepository $absencesRepository): Response
+    public function index(AbsencesRepository $absencesRepository, PaginatorInterface $paginator, Request $request): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
+            $data = $absencesRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $data = $absencesRepository->findByTeacher($user);
+        } else {
+            $data = $absencesRepository->findByStudent($user);
+        }
+
+        $absences = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
+
         return $this->render('absences/index.html.twig', [
-            'absences' => $absencesRepository->findAll(),
+            'absences' => $absences,
         ]);
     }
 
@@ -76,7 +89,7 @@ final class AbsencesController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$absence->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $absence->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($absence);
             $entityManager->flush();
         }

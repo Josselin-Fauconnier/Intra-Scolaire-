@@ -6,6 +6,7 @@ use App\Entity\PromotionUsers;
 use App\Form\PromotionUsersType;
 use App\Repository\PromotionUsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,10 +18,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class PromotionUsersController extends AbstractController
 {
     #[Route(name: 'app_promotion_users_index', methods: ['GET'])]
-    public function index(PromotionUsersRepository $promotionUsersRepository): Response
+    public function index(PromotionUsersRepository $promotionUsersRepository, PaginatorInterface $paginator, Request $request): Response
     {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
+            $data = $promotionUsersRepository->findAll();
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $data = $promotionUsersRepository->findByTeacher($user);
+        } else {
+            $data = $promotionUsersRepository->findByStudent($user);
+        }
+
+        $promotionUsers = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
+
         return $this->render('promotion_users/index.html.twig', [
-            'promotion_users' => $promotionUsersRepository->findAll(),
+            'promotion_users' => $promotionUsers,
         ]);
     }
 
@@ -76,7 +89,7 @@ final class PromotionUsersController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, PromotionUsers $promotionUser, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$promotionUser->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $promotionUser->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($promotionUser);
             $entityManager->flush();
         }

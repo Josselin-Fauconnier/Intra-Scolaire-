@@ -8,8 +8,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
 class ProjectsType extends AbstractType
 {
@@ -17,18 +15,14 @@ class ProjectsType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('visibility', CheckboxType::class, [
-                'required' => false,
-            ])
-            ->add('description', null, ['required' => false])
-            ->add('google_drive', null, ['required' => false])
-            ->add('due_date', DateTimeType::class, [
-                'widget' => 'single_text',
-                'required' => false,
-            ])
-            ->add('promotion', EntityType::class, [
+            ->add('visibility')
+            ->add('description')
+            ->add('google_drive')
+            ->add('due_date')
+            ->add('promotions', EntityType::class, [
                 'class' => Promotions::class,
-                'choice_label' => 'name',
+                'choice_label' => 'id',
+                'multiple' => true,
             ])
         ;
     }

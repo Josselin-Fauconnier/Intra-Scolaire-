@@ -18,10 +18,12 @@ class PromotionUsersType extends AbstractType
             ->add('user', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
+                'property_path' => 'userId',
             ])
             ->add('promotion', EntityType::class, [
                 'class' => Promotions::class,
                 'choice_label' => 'name',
+                'property_path' => 'promotionId',
             ])
         ;
     }

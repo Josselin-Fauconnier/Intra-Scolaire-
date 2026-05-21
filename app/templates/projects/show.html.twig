@@ -14,39 +14,109 @@
     <div class="detail-table-wrapper">
         <table class="table detail-table">
             <tbody>
-                <tr>
-                    <th>ID</th>
-                    <td>{{ project.id }}</td>
-                </tr>
-                <tr>
-                    <th>Titre</th>
-                    <td>{{ project.title }}</td>
-                </tr>
-                <tr>
-                    <th>Visibilite</th>
-                    <td>{{ project.visibility ? 'Public' : 'Prive' }}</td>
-                </tr>
-                <tr>
-                    <th>Description</th>
-                    <td>{{ project.description }}</td>
-                </tr>
-                <tr>
-                    <th>Google Drive</th>
-                    <td>{% if project.googleDrive %}<a href="{{ project.googleDrive }}" target="_blank">Lien</a>{% else %}—{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Date limite</th>
-                    <td>{{ project.dueDate ? project.dueDate|date('d/m/Y') : '—' }}</td>
-                </tr>
+                <tr><th>ID</th><td>{{ project.id }}</td></tr>
+                <tr><th>Promotion</th><td></td></tr>
+                <tr><th>Titre</th><td>{{ project.title }}</td></tr>
+                <tr><th>Visibilite</th><td>{{ project.visibility ? 'Public' : 'Prive' }}</td></tr>
+                <tr><th>Description</th><td>{{ project.description }}</td></tr>
+                <tr><th>Google Drive</th><td>{% if project.googleDrive %}<a href="{{ project.googleDrive }}" target="_blank">Lien</a>{% else %}-{% endif %}</td></tr>
+                <tr><th>Date limite</th><td>{{ project.dueDate ? project.dueDate|date('d/m/Y') : '-' }}</td></tr>
             </tbody>
         </table>
     </div>
 
-    {% if is_granted('ROLE_TEACHER') %}
+    {% if is_granted('ROLE_TEACHER') or (is_granted('ROLE_STUDENT') and not hasGrade) %}
         <div class="detail-actions">
-            <a href="{{ path('app_projects_edit', {'id': project.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
-            {{ include('projects/_delete_form.html.twig') }}
+            {% if is_granted('ROLE_TEACHER') %}
+                <a href="{{ path('app_projects_edit', {'id': project.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
+                {{ include('projects/_delete_form.html.twig') }}
+            {% endif %}
+            {% if is_granted('ROLE_STUDENT') and not hasGrade %}
+                <form method="post" action="{{ path('app_projects_register', {'id': project.id}) }}">
+                    <button type="submit" class="btn btn-success btn-sm">
+                        S'inscrire
+                    </button>
+                </form>
+            {% endif %}
         </div>
+    {% endif %}
+
+    {% if hasGrade %}
+    <div class="responsive-table-wrapper">
+        <table class="table table-hover responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                    <th>Soumission</th>
+                    <th>Mise a jour</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="ID">{{ hasGrade.id }}</td>
+                    <td data-label="Note">{{ hasGrade.grade }}</td>
+                    <td data-label="Commentaire">{{ hasGrade.comments }}</td>
+                    <td data-label="Soumission">{{ hasGrade.submission }}</td>
+                    <td data-label="Mise a jour">{{ hasGrade.updateHistory ? hasGrade.updateHistory|date('d/m/Y H:i') : '-' }}</td>
+                    <td data-label="Statut">{{ hasGrade.status.value }}</td>
+                    <td data-label="Actions">
+                        <div class="table-actions">
+                            {% if hasGrade.status.value == 'en_attente' %}
+                                {{ form_start(submissionForm, {'action': path('app_projects_show', {'id': project.id})}) }}
+                                    {{ form_row(submissionForm.submission) }}
+                                    <button class="btn btn-primary">Enregistrer mon lien</button>
+                                {{ form_end(submissionForm) }}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if is_granted('ROLE_TEACHER') %}
+    <div class="responsive-table-wrapper">
+        <table class="table table-hover responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                    <th>Soumission</th>
+                    <th>Mise a jour</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for grade in grades %}
+                <tr>
+                    <td data-label="ID">{{ grade.id }}</td>
+                    <td data-label="Note">{{ grade.grade }}</td>
+                    <td data-label="Commentaire">{{ grade.comments }}</td>
+                    <td data-label="Soumission">{{ grade.submission }}</td>
+                    <td data-label="Mise a jour">{{ grade.updateHistory ? grade.updateHistory|date('d/m/Y H:i') : '-' }}</td>
+                    <td data-label="Statut">{{ grade.status.value }}</td>
+                    <td data-label="Actions">
+                        <div class="table-actions">
+                            <a href="{{ path('app_grades_show', {'id': grade.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
+                            <a href="{{ path('app_grades_edit', {'id': grade.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="table-empty-row">
+                    <td colspan="7" class="table-empty-state">Aucune note enregistree.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% endif %}
 </turbo-frame>
 {% endblock %}

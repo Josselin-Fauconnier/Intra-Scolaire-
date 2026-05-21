@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProjectsRepository::class)]
 class Projects
@@ -16,18 +17,18 @@ class Projects
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'projects')]
+    /* #[ORM\ManyToOne(inversedBy: 'projects')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Promotions $promotion = null;
+    private ?Promotions $promotion = null; */
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private string $title = '';
 
     #[ORM\Column]
-    private ?bool $visibility = null;
+    private bool $visibility = False;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $description = null;
+    private string $description = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $google_drive = null;
@@ -41,9 +42,16 @@ class Projects
     #[ORM\OneToMany(targetEntity: Grades::class, mappedBy: 'project', orphanRemoval: true)]
     private Collection $grades;
 
+    /**
+     * @var Collection<int, promotions>
+     */
+    #[ORM\ManyToMany(targetEntity: Promotions::class, inversedBy: 'projects')]
+    private Collection $promotions;
+
     public function __construct()
     {
         $this->grades = new ArrayCollection();
+        $this->promotions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -51,17 +59,6 @@ class Projects
         return $this->id;
     }
 
-    public function getPrmotionId(): ?Promotions
-    {
-        return $this->promotion;
-    }
-
-    public function setPrmotionId(?Promotions $promotion): static
-    {
-        $this->promotion = $promotion;
-
-        return $this;
-    }
 
     public function getTitle(): ?string
     {
@@ -135,7 +132,7 @@ class Projects
     {
         if (!$this->grades->contains($grade)) {
             $this->grades->add($grade);
-            $grade->setProjectId($this);
+            $grade->setProject($this);
         }
 
         return $this;
@@ -145,10 +142,34 @@ class Projects
     {
         if ($this->grades->removeElement($grade)) {
             // set the owning side to null (unless already changed)
-            if ($grade->getProjectId() === $this) {
-                $grade->setProjectId(null);
+            if ($grade->getProject() === $this) {
+                $grade->setProject(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Promotions>
+     */
+    public function getPromotions(): Collection
+    {
+        return $this->promotions;
+    }
+
+    public function addPromotion(Promotions $promotion): static
+    {
+        if (!$this->promotions->contains($promotion)) {
+            $this->promotions->add($promotion);
+        }
+
+        return $this;
+    }
+
+    public function removePromotion(Promotions $promotion): static
+    {
+        $this->promotions->removeElement($promotion);
 
         return $this;
     }

@@ -203,6 +203,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getFullName(): string
+    {
+        return sprintf('%s %s', $this->firstname, $this->lastname);
+    }
+
     public function getPhoneNumber(): ?string
     {
         return $this->phone_number;
@@ -251,7 +256,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->promotions->contains($promotion)) {
             $this->promotions->add($promotion);
-            $promotion->setProfessorId($this);
+            $promotion->setProfessor($this);
         }
 
         return $this;
@@ -261,8 +266,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->promotions->removeElement($promotion)) {
             // set the owning side to null (unless already changed)
-            if ($promotion->getProfessorId() === $this) {
-                $promotion->setProfessorId(null);
+            if ($promotion->getProfessor() === $this) {
+                $promotion->setProfessor(null);
             }
         }
 
@@ -281,7 +286,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->promotionUsers->contains($promotionUser)) {
             $this->promotionUsers->add($promotionUser);
-            $promotionUser->setUserId($this);
+            $promotionUser->setUser($this);
         }
 
         return $this;
@@ -291,8 +296,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->promotionUsers->removeElement($promotionUser)) {
             // set the owning side to null (unless already changed)
-            if ($promotionUser->getUserId() === $this) {
-                $promotionUser->setUserId(null);
+            if ($promotionUser->getUser() === $this) {
+                $promotionUser->setUser(null);
             }
         }
 
@@ -311,7 +316,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->documents->contains($document)) {
             $this->documents->add($document);
-            $document->setUserId($this);
+            $document->setUser($this);
         }
 
         return $this;
@@ -321,8 +326,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->documents->removeElement($document)) {
             // set the owning side to null (unless already changed)
-            if ($document->getUserId() === $this) {
-                $document->setUserId(null);
+            if ($document->getUser() === $this) {
+                $document->setUser(null);
             }
         }
 

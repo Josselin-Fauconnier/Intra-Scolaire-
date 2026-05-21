@@ -26,24 +26,24 @@ class PromotionUsers
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUserId(?User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getPromotionId(): ?Promotions
+    public function getPromotion(): ?Promotions
     {
         return $this->promotion;
     }
 
-    public function setPromotionId(?Promotions $promotion): static
+    public function setPromotion(?Promotions $promotion): static
     {
         $this->promotion = $promotion;
 
