@@ -24,7 +24,7 @@
 
         {% if app.user %}
             <div class="subtitle text-center">
-                Tu es connecte en tant que {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">se deconnecter</a>
+                Tu es connecte en tant que {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}" class="auth-link">se deconnecter</a>
             </div>
         {% endif %}
 
@@ -66,11 +66,9 @@
         </button>
 
         <div class="subtitle text-center">
-              Pas encore de compte ?
-         <a href="{{ path('app_register') }}">
-                 S'inscrire
-        </a>
-</div>
+            Pas encore de compte ?
+            <a href="{{ path('app_register') }}" class="auth-link">S'inscrire</a>
+        </div>
     </form>
 </div>
 {% endblock %}

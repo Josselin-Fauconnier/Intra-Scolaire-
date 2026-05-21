@@ -1,4 +1,22 @@
-{{ form_start(form, {'action': app.request.requestUri}) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'action': app.request.requestUri, 'attr': {'class': 'dashboard-form'}}) }}
+    <div class="dashboard-form-shell">
+        <div class="dashboard-form-intro">
+            <span class="pill">Absence</span>
+            <p class="dashboard-note">Indique la periode concernee et, si besoin, le justificatif associe.</p>
+        </div>
+
+        {% if form_errors(form) %}
+            <div class="dashboard-flash dashboard-flash-danger">
+                {{ form_errors(form) }}
+            </div>
+        {% endif %}
+
+        <div class="dashboard-form-fields">
+            {{ form_widget(form) }}
+        </div>
+
+        <div class="dashboard-form-actions">
+            <button class="btn btn-primary">{{ button_label|default('Enregistrer l absence') }}</button>
+        </div>
+    </div>
 {{ form_end(form) }}

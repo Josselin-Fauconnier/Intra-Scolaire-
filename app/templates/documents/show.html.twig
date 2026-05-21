@@ -22,8 +22,9 @@
                     <th>Type</th>
                     <td>
                         {% set typeValue = document.type.value|lower %}
-                        {% set color = typeValue == 'pdf' ? '#e74c3c' : (typeValue == 'video' ? '#3498db' : '#6c757d') %}
-                        <span class="badge" style="background-color: {{ color }}; padding: 5px 10px;">{{ typeValue|upper }}</span>
+                        <span class="type-tag {{ typeValue == 'pdf' ? 'type-pdf' : (typeValue == 'video' ? 'type-video' : 'type-other') }}">
+                            {{ typeValue|upper }}
+                        </span>
                     </td>
                 </tr>
                 <tr>
