@@ -19,15 +19,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminController extends AbstractController
 {
     #[Route('/users', name: 'app_admin_users', methods: ['GET'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function users(
         UserRepository $userRepository,
         PromotionsRepository $promotionsRepository,
         PaginatorInterface $paginator,
         Request $request
     ): Response {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
+            throw $this->createAccessDeniedException("Accès refusé.");
+        }
         $currentUser = $this->getUser();
-        $isAdmin     = $this->isGranted('ROLE_ADMIN');
+        $isAdmin     = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR');
 
         $search      = trim($request->query->getString('search', ''));
         $promoParam  = $request->query->get('promotion', '');
@@ -51,9 +54,12 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}', name: 'app_students_show', methods: ['GET'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function show(User $user): Response
     {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
+            throw $this->createAccessDeniedException("Accès refusé.");
+        }
         return $this->render('admin/student_show.html.twig', [
             'student' => $user,
         ]);

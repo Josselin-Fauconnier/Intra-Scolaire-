@@ -75,7 +75,7 @@
                 </a>
             </li>
 
-            {% if is_granted('ROLE_TEACHER') %}
+            {% if is_granted('ROLE_TEACHER') or is_granted('ROLE_VISITOR') %}
             <li>
                 <a href="{{ path('app_admin_users') }}"
                    class="sidebar-link"

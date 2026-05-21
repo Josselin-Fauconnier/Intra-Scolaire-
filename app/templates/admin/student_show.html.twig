@@ -37,6 +37,7 @@
                     <option value="ROLE_STUDENT" {% if 'ROLE_STUDENT' in student.roles %}selected{% endif %}>Étudiant</option>
                     <option value="ROLE_TEACHER" {% if 'ROLE_TEACHER' in student.roles %}selected{% endif %}>Professeur</option>
                     <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in student.roles %}selected{% endif %}>Admin</option>
+                    <option value="ROLE_VISITOR {% if 'ROLE_VISITOR' in student.roles %}selected{% endif %}>Visiteur</option>
                 </select>
                 <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
             </form>
