@@ -22,6 +22,7 @@
             <tr><th>Nom</th><td>{{ user.lastname }}</td></tr>
             <tr><th>Rôle</th><td>
                 {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_VISITOR') %}Visiteur
                 {% elseif is_granted('ROLE_TEACHER') %}Professeur
                 {% else %}Étudiant{% endif %}
             </td></tr>
