@@ -80,8 +80,22 @@ final class ProjectsController extends AbstractController
         ]);
 
         if (!$grade) {
+
+            $user = $this->getUser();
+            $userPromotions = $user->getPromotions();
+            $projectPromotions = $project->getPromotions();
+
+            $matchingPromotion = $userPromotions->filter(function ($promo) use ($projectPromotions) {
+                return $projectPromotions->contains($promo);
+            })->first();
+
+            if (!$matchingPromotion) {
+                throw $this->createAccessDeniedException("Vous n'appartenez à aucune promotion associée à ce projet.");
+            }
+
             $grade = new Grades();
             $grade->setProject($project);
+            $grade->setPromotion($matchingPromotion);
             $grade->setStudent($this->getUser());
             $grade->setStatus(GradeStatus::PENDING);
             $grade->setUpdateHistory(new DateTime());

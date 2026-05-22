@@ -35,7 +35,8 @@ final class AdminController extends AbstractController
 
         $teacher = $isAdmin ? null : $currentUser;
 
-        $data     = $userRepository->findStudents($teacher, $search, $promotionId);
+        /*  $data     = $userRepository->findStudents($teacher, $search, $promotionId); */
+        $data     = $userRepository->findStudents();
         $students = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         $promotions = $isAdmin

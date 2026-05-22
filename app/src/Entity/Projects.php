@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProjectsRepository::class)]
 class Projects
@@ -16,10 +15,6 @@ class Projects
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    /* #[ORM\ManyToOne(inversedBy: 'projects')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Promotions $promotion = null; */
 
     #[ORM\Column(length: 255)]
     private string $title = '';
