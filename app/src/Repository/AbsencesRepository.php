@@ -35,6 +35,7 @@ class AbsencesRepository extends ServiceEntityRepository
             ->join('pu.promotion', 'pr')
             ->where('pr.professor = :teacher')
             ->setParameter('teacher', $teacher)
+            ->groupBy('a.id')
             ->orderBy('a.id', 'DESC')
             ->getQuery()
             ->getResult();

@@ -15,37 +15,46 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 class AbsencesType extends AbstractType
 {
+    public function __construct(
+        private UserRepository $userRepository,
+        private DocumentsRepository $documentsRepository,
+    ) {}
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $students = $this->userRepository->findStudents();
+
+        $allDocs = $this->documentsRepository->findAll();
+        $studentDocs = array_values(array_filter(
+            $allDocs,
+            fn(Documents $d) => in_array('ROLE_STUDENT', $d->getUser()->getRoles(), true)
+        ));
+
         $builder
             ->add('start_date', DateTimeType::class, [
                 'widget' => 'single_text',
+                'label' => 'Début',
             ])
             ->add('end_date', DateTimeType::class, [
                 'widget' => 'single_text',
                 'required' => false,
+                'label' => 'Fin',
             ])
             ->add('user', EntityType::class, [
                 'class' => User::class,
+                'choices' => $students,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'property_path' => 'userId',
-                'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
-                    ->where('u.roles LIKE :role')
-                    ->setParameter('role', '%ROLE_STUDENT%')
-                    ->orderBy('u.lastname', 'ASC'),
+                'label' => 'Étudiant',
             ])
             ->add('document', EntityType::class, [
                 'class' => Documents::class,
+                'choices' => $studentDocs,
                 'choice_label' => fn(Documents $d) => $d->getUser()->getFirstname()
                     . ' ' . $d->getUser()->getLastname()
                     . ' — ' . $d->getTitle(),
                 'required' => false,
-                'property_path' => 'documentId',
-                'query_builder' => fn(DocumentsRepository $er) => $er->createQueryBuilder('d')
-                    ->join('d.user', 'u')
-                    ->where('u.roles LIKE :role')
-                    ->setParameter('role', '%ROLE_STUDENT%')
-                    ->orderBy('u.lastname', 'ASC'),
+                'placeholder' => 'Aucun justificatif',
+                'label' => 'Justificatif',
             ])
         ;
     }

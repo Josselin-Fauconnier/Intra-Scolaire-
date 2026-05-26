@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Absences index{% endblock %}
+{% block title %}Absences{% endblock %}
 
 {% block body %}
 <turbo-frame id="main-frame">
@@ -14,18 +14,26 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Étudiant</th>
                 <th>Début</th>
                 <th>Fin</th>
+                <th>Justificatif</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for absence in absences %}
             <tr>
-                <td>{{ absence.id }}</td>
+                <td>{{ absence.user.firstname }} {{ absence.user.lastname }}</td>
                 <td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td>
                 <td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td>
+                <td>
+                    {% if absence.document %}
+                        <span class="badge bg-success"><i class="bi bi-file-earmark-check"></i> {{ absence.document.title }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
                 <td>
                     <a href="{{ path('app_absences_show', {'id': absence.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
                     {% if is_granted('ROLE_TEACHER') %}
@@ -35,7 +43,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="4" class="text-center text-muted py-4">Aucune absence enregistrée.</td>
+                <td colspan="5" class="text-center text-muted py-4">Aucune absence enregistrée.</td>
             </tr>
         {% endfor %}
         </tbody>

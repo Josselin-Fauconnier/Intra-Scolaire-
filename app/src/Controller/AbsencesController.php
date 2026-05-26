@@ -30,7 +30,10 @@ final class AbsencesController extends AbstractController
             $data = $absencesRepository->findByStudent($user);
         }
 
-        $absences = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
+        $raw = $request->query->get('page', '');
+        $page = ($raw !== '' && ctype_digit($raw)) ? (int) $raw : 1;
+
+        $absences = $paginator->paginate($data, $page, 20);
 
         return $this->render('absences/index.html.twig', [
             'absences' => $absences,
@@ -61,6 +64,12 @@ final class AbsencesController extends AbstractController
     #[Route('/{id}', name: 'app_absences_show', methods: ['GET'])]
     public function show(Absences $absence): Response
     {
+        $user = $this->getUser();
+
+        if (!$this->isGranted('ROLE_TEACHER') && $absence->getUser() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
         return $this->render('absences/show.html.twig', [
             'absence' => $absence,
         ]);

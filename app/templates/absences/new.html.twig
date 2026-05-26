@@ -10,6 +10,6 @@
             <i class="bi bi-arrow-left"></i> Retour
         </a>
     </div>
-    {{ include('absences/_form.html.twig') }}
+    {{ include('absences/_form.html.twig', {'action': path('app_absences_new')}) }}
 </turbo-frame>
 {% endblock %}
