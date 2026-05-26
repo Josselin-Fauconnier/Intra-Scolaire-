@@ -22,39 +22,42 @@ class AbsencesType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $students = $this->userRepository->findStudents();
+        $currentUser = $options['current_user'];
+        $isAdmin     = $currentUser && in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
+        $students    = $this->userRepository->findStudents($isAdmin ? null : $currentUser);
 
         $allDocs = $this->documentsRepository->findAll();
+        $allowedIds = array_map(fn(User $u) => $u->getId(), $students);
         $studentDocs = array_values(array_filter(
             $allDocs,
-            fn(Documents $d) => in_array('ROLE_STUDENT', $d->getUser()->getRoles(), true)
+            fn(Documents $d) => in_array($d->getUser()->getId(), $allowedIds, true)
         ));
 
         $builder
             ->add('start_date', DateTimeType::class, [
                 'widget' => 'single_text',
-                'label' => 'Début',
+                'label'  => 'Début',
             ])
             ->add('end_date', DateTimeType::class, [
-                'widget' => 'single_text',
+                'widget'   => 'single_text',
                 'required' => false,
-                'label' => 'Fin',
+                'label'    => 'Fin',
             ])
             ->add('user', EntityType::class, [
-                'class' => User::class,
-                'choices' => $students,
+                'class'        => User::class,
+                'choices'      => $students,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'label' => 'Étudiant',
+                'label'        => 'Étudiant',
             ])
             ->add('document', EntityType::class, [
-                'class' => Documents::class,
-                'choices' => $studentDocs,
+                'class'        => Documents::class,
+                'choices'      => $studentDocs,
                 'choice_label' => fn(Documents $d) => $d->getUser()->getFirstname()
                     . ' ' . $d->getUser()->getLastname()
                     . ' — ' . $d->getTitle(),
-                'required' => false,
+                'required'    => false,
                 'placeholder' => 'Aucun justificatif',
-                'label' => 'Justificatif',
+                'label'       => 'Justificatif',
             ])
         ;
     }
@@ -62,7 +65,9 @@ class AbsencesType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Absences::class,
+            'data_class'   => Absences::class,
+            'current_user' => null,
         ]);
+        $resolver->setAllowedTypes('current_user', ['null', User::class]);
     }
 }

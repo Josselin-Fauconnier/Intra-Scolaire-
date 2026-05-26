@@ -40,4 +40,18 @@ class AbsencesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function isTeacherAllowed(User $teacher, Absences $absence): bool
+    {
+        return (bool) $this->createQueryBuilder('a')
+            ->join('a.user', 'u')
+            ->join('u.promotionUsers', 'pu')
+            ->join('pu.promotion', 'pr')
+            ->where('a.id = :absence')
+            ->andWhere('pr.professor = :teacher')
+            ->setParameter('absence', $absence->getId())
+            ->setParameter('teacher', $teacher)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

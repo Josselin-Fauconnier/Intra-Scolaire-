@@ -45,7 +45,9 @@ final class AbsencesController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $absence = new Absences();
-        $form = $this->createForm(AbsencesType::class, $absence);
+        $form = $this->createForm(AbsencesType::class, $absence, [
+            'current_user' => $this->getUser(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -57,16 +59,20 @@ final class AbsencesController extends AbstractController
 
         return $this->render('absences/new.html.twig', [
             'absence' => $absence,
-            'form' => $form,
+            'form'    => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_absences_show', methods: ['GET'])]
-    public function show(Absences $absence): Response
+    public function show(Absences $absence, AbsencesRepository $absencesRepository): Response
     {
         $user = $this->getUser();
 
-        if (!$this->isGranted('ROLE_TEACHER') && $absence->getUser() !== $user) {
+        if ($this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_ADMIN')) {
+            if (!$absencesRepository->isTeacherAllowed($user, $absence)) {
+                throw $this->createAccessDeniedException();
+            }
+        } elseif (!$this->isGranted('ROLE_TEACHER') && $absence->getUser() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -77,9 +83,15 @@ final class AbsencesController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_absences_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function edit(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Absences $absence, EntityManagerInterface $entityManager, AbsencesRepository $absencesRepository): Response
     {
-        $form = $this->createForm(AbsencesType::class, $absence);
+        if (!$this->isGranted('ROLE_ADMIN') && !$absencesRepository->isTeacherAllowed($this->getUser(), $absence)) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $form = $this->createForm(AbsencesType::class, $absence, [
+            'current_user' => $this->getUser(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -90,14 +102,18 @@ final class AbsencesController extends AbstractController
 
         return $this->render('absences/edit.html.twig', [
             'absence' => $absence,
-            'form' => $form,
+            'form'    => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_absences_delete', methods: ['POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function delete(Request $request, Absences $absence, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Absences $absence, EntityManagerInterface $entityManager, AbsencesRepository $absencesRepository): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN') && !$absencesRepository->isTeacherAllowed($this->getUser(), $absence)) {
+            throw $this->createAccessDeniedException();
+        }
+
         if ($this->isCsrfTokenValid('delete' . $absence->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($absence);
             $entityManager->flush();
