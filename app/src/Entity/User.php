@@ -346,7 +346,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->absences->contains($absence)) {
             $this->absences->add($absence);
-            $absence->setUserId($this);
+            $absence->setUser($this);
         }
 
         return $this;
@@ -356,8 +356,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->absences->removeElement($absence)) {
             // set the owning side to null (unless already changed)
-            if ($absence->getUserId() === $this) {
-                $absence->setUserId(null);
+            if ($absence->getUser() === $this) {
+                $absence->setUser(null);
             }
         }
 

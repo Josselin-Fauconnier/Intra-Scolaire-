@@ -30,7 +30,10 @@ final class GradesController extends AbstractController
             $data = $gradesRepository->findByStudent($user);
         }
 
-        $grades = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
+        $raw = $request->query->get('page', '');
+        $page = ($raw !== '' && ctype_digit($raw)) ? (int) $raw : 1;
+
+        $grades = $paginator->paginate($data, $page, 20);
 
         return $this->render('grades/index.html.twig', [
             'grades' => $grades,
@@ -57,14 +60,22 @@ final class GradesController extends AbstractController
 
         return $this->render('grades/new.html.twig', [
             'grade' => $grade,
-            'form' => $form,
+            'form'  => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_grades_show', methods: ['GET'])]
-    public function show(Grades $grade): Response
+    public function show(Grades $grade, GradesRepository $gradesRepository): Response
     {
+        $user = $this->getUser();
 
+        if ($this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_ADMIN')) {
+            if (!$gradesRepository->isTeacherAllowed($user, $grade)) {
+                throw $this->createAccessDeniedException();
+            }
+        } elseif (!$this->isGranted('ROLE_TEACHER') && $grade->getStudent() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
 
         return $this->render('grades/show.html.twig', [
             'grade' => $grade,
@@ -73,8 +84,12 @@ final class GradesController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_grades_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function edit(Request $request, Grades $grade, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Grades $grade, EntityManagerInterface $entityManager, GradesRepository $gradesRepository): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN') && !$gradesRepository->isTeacherAllowed($this->getUser(), $grade)) {
+            throw $this->createAccessDeniedException();
+        }
+
         $form = $this->createForm(GradesType::class, $grade, [
             'current_user' => $this->getUser(),
         ]);
@@ -89,14 +104,18 @@ final class GradesController extends AbstractController
 
         return $this->render('grades/edit.html.twig', [
             'grade' => $grade,
-            'form' => $form,
+            'form'  => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_grades_delete', methods: ['POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function delete(Request $request, Grades $grade, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Grades $grade, EntityManagerInterface $entityManager, GradesRepository $gradesRepository): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN') && !$gradesRepository->isTeacherAllowed($this->getUser(), $grade)) {
+            throw $this->createAccessDeniedException();
+        }
+
         if ($this->isCsrfTokenValid('delete' . $grade->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($grade);
             $entityManager->flush();

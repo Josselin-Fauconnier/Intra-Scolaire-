@@ -10,7 +10,7 @@
             <i class="bi bi-arrow-left"></i> Retour
         </a>
     </div>
-    {{ include('absences/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    {{ include('absences/_form.html.twig', {'action': path('app_absences_edit', {'id': absence.id}), 'button_label': 'Mettre à jour'}) }}
     {{ include('absences/_delete_form.html.twig') }}
 </turbo-frame>
 {% endblock %}
