@@ -163,7 +163,7 @@
                                 {% if absence.endDate and absence.endDate != absence.startDate %}
                                     → {{ absence.endDate|date('d/m/Y') }}
                                 {% endif %}
-                                {% if absence.documentId %}
+                                {% if absence.document %}
                                     <span class="badge bg-info ms-2">Justifiée</span>
                                 {% else %}
                                     <span class="badge bg-danger ms-2">Non justifiée</span>

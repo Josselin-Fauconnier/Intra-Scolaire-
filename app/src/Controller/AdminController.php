@@ -55,8 +55,17 @@ final class AdminController extends AbstractController
 
     #[Route('/users/{id}', name: 'app_students_show', methods: ['GET'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function show(User $user, PromotionsRepository $promotionsRepository): Response
+    public function show(User $user, PromotionsRepository $promotionsRepository, UserRepository $userRepository): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $allowed = $userRepository->findStudents($this->getUser());
+            $allowedIds = array_map(fn(User $u) => $u->getId(), $allowed);
+
+            if (!in_array($user->getId(), $allowedIds, true)) {
+                throw $this->createAccessDeniedException();
+            }
+        }
+
         return $this->render('admin/student_show.html.twig', [
             'student' => $user,
             'promotions' => $promotionsRepository->findAll()

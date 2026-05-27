@@ -13,9 +13,19 @@
 
     <table class="table">
         <tbody>
-            <tr><th>ID</th><td>{{ absence.id }}</td></tr>
+            <tr><th>Étudiant</th><td>{{ absence.user.firstname }} {{ absence.user.lastname }}</td></tr>
             <tr><th>Début</th><td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td></tr>
             <tr><th>Fin</th><td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td></tr>
+            <tr>
+                <th>Justificatif</th>
+                <td>
+                    {% if absence.document %}
+                        <span class="badge bg-success"><i class="bi bi-file-earmark-check"></i> {{ absence.document.title }}</span>
+                    {% else %}
+                        <span class="text-muted">Aucun justificatif</span>
+                    {% endif %}
+                </td>
+            </tr>
         </tbody>
     </table>
 
