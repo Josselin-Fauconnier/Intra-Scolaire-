@@ -41,6 +41,22 @@ class GradesRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findSubmittedByTeacher(User $teacher): array
+    {
+        return $this->createQueryBuilder('g')
+            ->join('g.student', 'u')
+            ->join('u.promotionUsers', 'pu')
+            ->join('pu.promotion', 'pr')
+            ->where('pr.professor = :teacher')
+            ->andWhere('g.status = :status')
+            ->setParameter('teacher', $teacher)
+            ->setParameter('status', \App\Enum\GradeStatus::SUBMITTED)
+            ->groupBy('g.id')
+            ->orderBy('g.update_history', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function isTeacherAllowed(User $teacher, Grades $grade): bool
     {
         return (bool) $this->createQueryBuilder('g')
