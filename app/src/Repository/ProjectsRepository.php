@@ -23,7 +23,9 @@ class ProjectsRepository extends ServiceEntityRepository
             ->join('p.promotions', 'promo')
             ->join('promo.promotionUsers', 'pu')
             ->where('pu.user = :student')
+            ->andWhere('p.visibility = true')
             ->setParameter('student', $student)
+            ->groupBy('p.id')
             ->orderBy('p.id', 'DESC')
             ->getQuery()
             ->getResult();
@@ -35,6 +37,7 @@ class ProjectsRepository extends ServiceEntityRepository
             ->join('p.promotions', 'pr')
             ->where('pr.professor = :teacher')
             ->setParameter('teacher', $teacher)
+            ->groupBy('p.id')
             ->orderBy('p.id', 'DESC')
             ->getQuery()
             ->getResult();
