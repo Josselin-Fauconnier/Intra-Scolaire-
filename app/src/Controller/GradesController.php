@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Grades;
 use App\Form\GradesType;
+use App\Form\GradeCorrectType;
+use App\Enum\GradeStatus;
 use App\Repository\GradesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -25,7 +27,7 @@ final class GradesController extends AbstractController
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $gradesRepository->findAll();
         } elseif ($this->isGranted('ROLE_TEACHER')) {
-            $data = $gradesRepository->findByTeacher($user);
+            $data = $gradesRepository->findSubmittedByTeacher($user);
         } else {
             $data = $gradesRepository->findByStudent($user);
         }
@@ -90,12 +92,13 @@ final class GradesController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $form = $this->createForm(GradesType::class, $grade, [
-            'current_user' => $this->getUser(),
+        $form = $this->createForm(GradeCorrectType::class, $grade, [
+            'action' => $this->generateUrl('app_grades_edit', ['id' => $grade->getId()]),
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $grade->setStatus(GradeStatus::GRADED);
             $grade->setUpdateHistory(new \DateTime());
             $entityManager->flush();
 

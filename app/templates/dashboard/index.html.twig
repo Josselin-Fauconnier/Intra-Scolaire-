@@ -46,7 +46,8 @@
                 <a href="{{ path('app_grades_index') }}"
                    class="sidebar-link"
                    data-turbo-frame="main-frame">
-                    <i class="bi bi-clipboard-check"></i> Notes
+                    <i class="bi bi-clipboard-check"></i>
+                    {{ is_granted('ROLE_TEACHER') ? 'À noter' : 'Notes' }}
                 </a>
             </li>
             <li>
