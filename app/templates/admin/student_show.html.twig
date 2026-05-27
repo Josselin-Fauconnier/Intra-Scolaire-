@@ -40,6 +40,17 @@
                 </select>
                 <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
             </form>
+            <form method="post"
+                  action="{{ path('app_admin_set_promo', {'id': student.id}) }}"
+                  class="d-flex gap-1">
+                <input type="hidden" name="_token" value="{{ csrf_token('set_promo_' ~ student.id) }}">
+                <select name="promotion[]" multiple class="form-select form-select-sm" style="width: auto;">
+                    {% for promotion in promotions %}
+                        <option value={{promotion.id}}>{{promotion.name}}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
+            </form>
             {% endif %}
             <a href="{{ path('app_admin_users') }}" class="btn btn-outline-secondary btn-sm" data-turbo-frame="main-frame">
                 <i class="bi bi-arrow-left"></i> Retour

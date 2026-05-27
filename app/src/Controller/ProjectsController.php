@@ -89,18 +89,16 @@ final class ProjectsController extends AbstractController
                 return $projectPromotions->contains($promo);
             })->first();
 
-            if (!$matchingPromotion) {
-                throw $this->createAccessDeniedException("Vous n'appartenez à aucune promotion associée à ce projet.");
+            if ($matchingPromotion) {
+                $grade = new Grades();
+                $grade->setProject($project);
+                $grade->setPromotion($matchingPromotion);
+                $grade->setStudent($this->getUser());
+                $grade->setStatus(GradeStatus::PENDING);
+                $grade->setUpdateHistory(new DateTime());
+                $entityManager->persist($grade);
+                $entityManager->flush();
             }
-
-            $grade = new Grades();
-            $grade->setProject($project);
-            $grade->setPromotion($matchingPromotion);
-            $grade->setStudent($this->getUser());
-            $grade->setStatus(GradeStatus::PENDING);
-            $grade->setUpdateHistory(new DateTime());
-            $entityManager->persist($grade);
-            $entityManager->flush();
         }
 
         $form = $this->createForm(GradeSubmission::class, $grade);
