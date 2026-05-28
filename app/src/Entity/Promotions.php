@@ -36,12 +36,19 @@ class Promotions
     #[ORM\ManyToMany(targetEntity: Projects::class, mappedBy: 'promotions')]
     private Collection $projects;
 
+    /**
+     * @var Collection<int, Grades>
+     */
+    #[ORM\OneToMany(targetEntity: Grades::class, mappedBy: 'promotion')]
+    private Collection $grades;
+
 
 
     public function __construct()
     {
         $this->promotionUsers = new ArrayCollection();
         $this->projects = new ArrayCollection();
+        $this->grades = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -147,6 +154,36 @@ class Promotions
     {
         if ($this->projects->removeElement($project)) {
             $project->removePromotion($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Grades>
+     */
+    public function getGrades(): Collection
+    {
+        return $this->grades;
+    }
+
+    public function addGrade(Grades $grade): static
+    {
+        if (!$this->grades->contains($grade)) {
+            $this->grades->add($grade);
+            $grade->setPromotion($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGrade(Grades $grade): static
+    {
+        if ($this->grades->removeElement($grade)) {
+            // set the owning side to null (unless already changed)
+            if ($grade->getPromotion() === $this) {
+                $grade->setPromotion(null);
+            }
         }
 
         return $this;
