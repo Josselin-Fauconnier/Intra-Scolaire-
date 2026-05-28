@@ -82,15 +82,18 @@ final class ProjectsController extends AbstractController
             'student' => $this->getUser(),
         ]);
 
-        if (!$grade) {
+        if (!$grade && $this->isGranted('ROLE_STUDENT')) {
 
             $user = $this->getUser();
-            $userPromotions = $user->getPromotions();
+            $userPromotions = $user->getPromotionUsers()->map(fn($pu) => $pu->getPromotion());
             $projectPromotions = $project->getPromotions();
 
             $matchingPromotion = $userPromotions->filter(function ($promo) use ($projectPromotions) {
                 return $projectPromotions->contains($promo);
             })->first();
+
+            dump($userPromotions->toArray());
+            dump($projectPromotions->toArray());
 
             if ($matchingPromotion) {
                 $grade = new Grades();
@@ -103,30 +106,26 @@ final class ProjectsController extends AbstractController
                 $entityManager->flush();
             }
         }
+
         if (!$this->isGranted('ROLE_TEACHER') && !$project->isVisibility()) {
             throw $this->createAccessDeniedException();
         }
 
-        $myGrade = null;
         $form    = null;
 
-        if (!$this->isGranted('ROLE_TEACHER')) {
-            $myGrade = $gradesRepository->findOneBy(['project' => $project, 'student' => $user]);
+        if ($grade && $grade->getStatus() === GradeStatus::PENDING) {
+            $form = $this->createForm(GradeSubmission::class, $grade, [
+                'action' => $this->generateUrl('app_projects_show', ['id' => $project->getId()]),
+            ]);
+            $form->handleRequest($request);
 
-            if ($myGrade && $myGrade->getStatus() === GradeStatus::PENDING) {
-                $form = $this->createForm(GradeSubmission::class, $myGrade, [
-                    'action' => $this->generateUrl('app_projects_show', ['id' => $project->getId()]),
-                ]);
-                $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $grade->setStatus(GradeStatus::SUBMITTED);
+                $grade->setUpdateHistory(new DateTime());
+                $entityManager->flush();
+                $this->addFlash('success', 'Projet soumis avec succès.');
 
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $myGrade->setStatus(GradeStatus::SUBMITTED);
-                    $myGrade->setUpdateHistory(new DateTime());
-                    $entityManager->flush();
-                    $this->addFlash('success', 'Projet soumis avec succès.');
-
-                    return $this->redirectToRoute('app_projects_show', ['id' => $project->getId()]);
-                }
+                return $this->redirectToRoute('app_projects_show', ['id' => $project->getId()]);
             }
         }
 
@@ -137,7 +136,7 @@ final class ProjectsController extends AbstractController
         return $this->render('projects/show.html.twig', [
             'project'        => $project,
             'grades'         => $grades,
-            'myGrade'        => $myGrade,
+            'myGrade'        => $grade,
             'submissionForm' => $form?->createView(),
         ]);
     }
