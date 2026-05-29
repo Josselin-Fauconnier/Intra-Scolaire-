@@ -1,34 +1,125 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Notifications{% endblock %}
+{% block title %}{{ notification.title }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+.msg-open-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    overflow: hidden;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.msg-open-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.msg-open-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.msg-open-meta { flex: 1; }
+.msg-open-from {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+.msg-open-date {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+.msg-open-body {
+    padding: 28px 28px 32px;
+}
+.msg-open-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+.msg-open-text {
+    font-size: 0.9rem;
+    color: #475569;
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+.msg-open-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+</style>
+{% endblock %}
 
 {% block body %}
-    <h1>Notifications</h1>
+<turbo-frame id="main-frame">
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ notification.id }}</td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td>{{ notification.title }}</td>
-            </tr>
-            <tr>
-                <th>Message</th>
-                <td>{{ notification.message }}</td>
-            </tr>
-            <tr>
-                <th>Type</th>
-                <td>{{ notification.type }}</td>
-            </tr>
-        </tbody>
-    </table>
+<div class="mb-3">
+    <a href="{{ path('app_notifications_index') }}" class="btn btn-outline-secondary btn-sm" data-turbo-frame="main-frame">
+        <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+</div>
 
-    <a href="{{ path('app_notifications_index') }}">back to list</a>
+<div class="msg-open-container">
+    <div class="msg-open-header">
+        <div class="msg-open-avatar">
+            {% if isSender %}
+                V
+            {% elseif notification.sender %}
+                {{ notification.sender.firstname|slice(0,1)|upper }}
+            {% else %}
+                S
+            {% endif %}
+        </div>
+        <div class="msg-open-meta">
+            <div class="msg-open-from">
+                {% if isSender %}
+                    Vous (envoyé)
+                {% elseif notification.sender %}
+                    {{ notification.sender.firstname }} {{ notification.sender.lastname }}
+                {% else %}
+                    Système
+                {% endif %}
+            </div>
+            <div class="msg-open-date">{{ notification.createdAt|date('d/m/Y à H:i') }}</div>
+        </div>
+        {% set type = notification.type.value %}
+        {% if type == 'alert' %}<span class="badge bg-primary">Alerte</span>
+        {% elseif type == 'warning' %}<span class="badge bg-warning text-dark">Avertissement</span>
+        {% elseif type == 'error' %}<span class="badge bg-danger">Erreur</span>
+        {% elseif type == 'success' %}<span class="badge bg-success">Succès</span>
+        {% endif %}
+    </div>
 
-    <a href="{{ path('app_notifications_edit', {'id': notification.id}) }}">edit</a>
+    <div class="msg-open-body">
+        <div class="msg-open-title">{{ notification.title }}</div>
+        {% if notification.message %}
+            <div class="msg-open-text">{{ notification.message }}</div>
+        {% endif %}
+    </div>
 
-    {{ include('notifications/_delete_form.html.twig') }}
+    <div class="msg-open-footer">
+        <a href="{{ path('app_notifications_index') }}" class="btn btn-outline-secondary btn-sm" data-turbo-frame="main-frame">
+            <i class="bi bi-arrow-left me-1"></i>Retour aux messages
+        </a>
+    </div>
+</div>
+
+</turbo-frame>
 {% endblock %}

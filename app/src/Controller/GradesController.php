@@ -6,7 +6,9 @@ use App\Entity\Grades;
 use App\Form\GradesType;
 use App\Form\GradeCorrectType;
 use App\Enum\GradeStatus;
+use App\Enum\NotificationType;
 use App\Repository\GradesRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -86,7 +88,7 @@ final class GradesController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_grades_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function edit(Request $request, Grades $grade, EntityManagerInterface $entityManager, GradesRepository $gradesRepository): Response
+    public function edit(Request $request, Grades $grade, EntityManagerInterface $entityManager, GradesRepository $gradesRepository, NotificationService $notificationService): Response
     {
         if (!$this->isGranted('ROLE_ADMIN') && !$gradesRepository->isTeacherAllowed($this->getUser(), $grade)) {
             throw $this->createAccessDeniedException();
@@ -100,6 +102,14 @@ final class GradesController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $grade->setStatus(GradeStatus::GRADED);
             $grade->setUpdateHistory(new \DateTime());
+
+            $notificationService->notify(
+                'Votre projet a été corrigé : ' . $grade->getProject()->getTitle(),
+                'Votre projet "' . $grade->getProject()->getTitle() . '" a été corrigé.' . ($grade->getGrade() ? ' Note : ' . $grade->getGrade() . '.' : ''),
+                NotificationType::SUCCESS,
+                $grade->getStudent()
+            );
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_grades_index', [], Response::HTTP_SEE_OTHER);

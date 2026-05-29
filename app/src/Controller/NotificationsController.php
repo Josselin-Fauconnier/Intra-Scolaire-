@@ -9,7 +9,6 @@ use App\Repository\NotificationRecipientsRepository;
 use App\Repository\NotificationsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,16 +20,24 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class NotificationsController extends AbstractController
 {
     #[Route(name: 'app_notifications_index', methods: ['GET'])]
-    public function index(NotificationRecipientsRepository $repo, PaginatorInterface $paginator, Request $request): Response
+    public function index(NotificationRecipientsRepository $repo, NotificationsRepository $notifRepo, Request $request): Response
     {
-        $recipients = $paginator->paginate(
-            $repo->findByUser($this->getUser()),
-            $request->query->getInt('page', 1),
-            5
-        );
+        $user = $this->getUser();
+
+        $sent     = $notifRepo->findSentByUser($user);
+        $received = $repo->findByUser($user);
+
+        $feed = [];
+        foreach ($sent as $notif) {
+            $feed[] = ['sent' => true, 'notification' => $notif, 'recipient' => null, 'sort' => $notif->getCreatedAt()->getTimestamp()];
+        }
+        foreach ($received as $r) {
+            $feed[] = ['sent' => false, 'notification' => $r->getNotificationId(), 'recipient' => $r, 'sort' => $r->getNotificationId()->getCreatedAt()->getTimestamp()];
+        }
+        usort($feed, fn($a, $b) => $a['sort'] <=> $b['sort']);
 
         return $this->render('notifications/index.html.twig', [
-            'recipients' => $recipients,
+            'feed' => $feed,
         ]);
     }
 
@@ -80,14 +87,15 @@ final class NotificationsController extends AbstractController
                 }
             }
 
+            $notification->setSender($this->getUser());
             $entityManager->persist($notification);
 
             $recipients = match ($audience) {
                 'students'  => $userRepository->findByRole('ROLE_STUDENT'),
                 'teachers'  => $userRepository->findByRole('ROLE_TEACHER'),
                 'promotion' => $promotion
-                    ? array_map(fn($pu) => $pu->getUserId(), $promotion->getpromotionUsers()->toArray())
-                    : [],
+                    ? array_map(fn($pu) => $pu->getUser(), $promotion->getpromotionUsers()->toArray())
+                    : $userRepository->findByRole('ROLE_STUDENT'),
                 default => $userRepository->findAll(),
             };
 
@@ -100,6 +108,7 @@ final class NotificationsController extends AbstractController
             }
 
             $entityManager->flush();
+            $this->addFlash('success', 'Notification envoyée avec succès.');
 
             return $this->redirectToRoute('app_notifications_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -111,16 +120,25 @@ final class NotificationsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_notifications_show', methods: ['GET'])]
-    public function show(Notifications $notification, NotificationRecipientsRepository $repo): Response
+    public function show(Notifications $notification, NotificationRecipientsRepository $repo, EntityManagerInterface $em): Response
     {
-        $recipient = $repo->findOneBy(['notification' => $notification, 'user' => $this->getUser()]);
+        $user      = $this->getUser();
+        $isSender  = $notification->getSender()?->getId() === $user->getId();
+        $recipient = $repo->findOneBy(['notification' => $notification, 'user' => $user]);
 
-        if (!$recipient) {
+        if (!$isSender && !$recipient) {
             throw $this->createAccessDeniedException();
+        }
+
+        if ($recipient && !$recipient->isRead()) {
+            $recipient->setIsRead(true);
+            $recipient->setReadAt(new \DateTimeImmutable());
+            $em->flush();
         }
 
         return $this->render('notifications/show.html.twig', [
             'notification' => $notification,
+            'isSender'     => $isSender,
         ]);
     }
 

@@ -26,6 +26,12 @@ class Notifications
     #[ORM\Column(enumType: NotificationType::class)]
     private ?NotificationType $type = null;
 
+    #[ORM\ManyToOne]
+    private ?User $sender = null;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $created_at;
+
     /**
      * @var Collection<int, NotificationRecipients>
      */
@@ -35,6 +41,7 @@ class Notifications
     public function __construct()
     {
         $this->notificationRecipients = new ArrayCollection();
+        $this->created_at = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -84,6 +91,22 @@ class Notifications
     public function getNotificationRecipients(): Collection
     {
         return $this->notificationRecipients;
+    }
+
+    public function getSender(): ?User
+    {
+        return $this->sender;
+    }
+
+    public function setSender(?User $sender): static
+    {
+        $this->sender = $sender;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->created_at;
     }
 
     public function addNotificationRecipient(NotificationRecipients $notificationRecipient): static

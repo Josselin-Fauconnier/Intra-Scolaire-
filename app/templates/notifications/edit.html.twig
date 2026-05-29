@@ -9,7 +9,7 @@
         <a href="{{ path('app_notifications_index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
     </div>
 
-    {{ include('notifications/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+    {{ include('notifications/_form.html.twig', {'action': path('app_notifications_edit', {'id': notification.id}), 'button_label': 'Enregistrer'}) }}
 
     {{ include('notifications/_delete_form.html.twig') }}
 </turbo-frame>

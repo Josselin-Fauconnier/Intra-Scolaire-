@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Notifications;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,16 @@ class NotificationsRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Notifications::class);
+    }
+
+    public function findSentByUser(User $user): array
+    {
+        return $this->createQueryBuilder('n')
+            ->where('n.sender = :user')
+            ->setParameter('user', $user)
+            ->orderBy('n.created_at', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

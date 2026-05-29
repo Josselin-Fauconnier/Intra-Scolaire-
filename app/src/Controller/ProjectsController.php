@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\Grades;
 use App\Entity\Projects;
 use App\Enum\GradeStatus;
+use App\Enum\NotificationType;
 use App\Form\ProjectsType;
 use App\Form\GradeSubmission;
 use App\Repository\GradesRepository;
 use App\Repository\ProjectsRepository;
+use App\Service\NotificationService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -67,7 +69,7 @@ final class ProjectsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_projects_show', methods: ['GET', 'POST'])]
-    public function show(Request $request, Projects $project, GradesRepository $gradesRepository, EntityManagerInterface $entityManager): Response
+    public function show(Request $request, Projects $project, GradesRepository $gradesRepository, EntityManagerInterface $entityManager, NotificationService $notificationService): Response
     {
         $user = $this->getUser();
 
@@ -90,6 +92,21 @@ final class ProjectsController extends AbstractController
                 if ($form->isSubmitted() && $form->isValid()) {
                     $myGrade->setStatus(GradeStatus::SUBMITTED);
                     $myGrade->setUpdateHistory(new DateTime());
+
+                    $teachers = [];
+                    foreach ($project->getPromotions() as $promotion) {
+                        $prof = $promotion->getProfessor();
+                        if ($prof && !in_array($prof->getId(), array_map(fn($t) => $t->getId(), $teachers), true)) {
+                            $teachers[] = $prof;
+                        }
+                    }
+                    $notificationService->notify(
+                        'Nouveau rendu : ' . $project->getTitle(),
+                        $user->getFirstname() . ' ' . $user->getLastname() . ' a soumis son projet.',
+                        NotificationType::ALERT,
+                        ...$teachers
+                    );
+
                     $entityManager->flush();
                     $this->addFlash('success', 'Projet soumis avec succès.');
 
@@ -112,7 +129,7 @@ final class ProjectsController extends AbstractController
 
     #[Route('/{id}/toggle', name: 'app_projects_toggle', methods: ['POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function toggle(Request $request, Projects $project, EntityManagerInterface $entityManager): Response
+    public function toggle(Request $request, Projects $project, EntityManagerInterface $entityManager, NotificationService $notificationService): Response
     {
         if (!$this->isCsrfTokenValid('toggle' . $project->getId(), $request->getPayload()->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -122,7 +139,8 @@ final class ProjectsController extends AbstractController
         $project->setVisibility(!$project->isVisibility());
 
         if ($wasHidden) {
-            $gradesRepo = $entityManager->getRepository(Grades::class);
+            $gradesRepo      = $entityManager->getRepository(Grades::class);
+            $studentsNotified = [];
 
             foreach ($project->getPromotions() as $promotion) {
                 foreach ($promotion->getPromotionUsers() as $pu) {
@@ -140,6 +158,16 @@ final class ProjectsController extends AbstractController
                         $grade->setUpdateHistory(new DateTime());
                         $entityManager->persist($grade);
                     }
+
+                    if (!in_array($student->getId(), $studentsNotified, true)) {
+                        $studentsNotified[] = $student->getId();
+                        $notificationService->notify(
+                            'Nouveau projet disponible : ' . $project->getTitle(),
+                            'Le projet "' . $project->getTitle() . '" est maintenant disponible. Date limite : ' . ($project->getDueDate()?->format('d/m/Y') ?? 'non définie') . '.',
+                            NotificationType::SUCCESS,
+                            $student
+                        );
+                    }
                 }
             }
         }
@@ -151,7 +179,7 @@ final class ProjectsController extends AbstractController
 
     #[Route('/{id}/sendback/{gradeId}', name: 'app_projects_sendback', methods: ['POST'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function sendback(Request $request, Projects $project, int $gradeId, GradesRepository $gradesRepository, EntityManagerInterface $entityManager): Response
+    public function sendback(Request $request, Projects $project, int $gradeId, GradesRepository $gradesRepository, EntityManagerInterface $entityManager, NotificationService $notificationService): Response
     {
         if (!$this->isCsrfTokenValid('sendback' . $gradeId, $request->getPayload()->getString('_token'))) {
             throw $this->createAccessDeniedException();
@@ -166,8 +194,15 @@ final class ProjectsController extends AbstractController
         $grade->setStatus(GradeStatus::PENDING);
         $grade->setSubmission(null);
         $grade->setUpdateHistory(new DateTime());
-        $entityManager->flush();
 
+        $notificationService->notify(
+            'Rendu renvoyé : ' . $project->getTitle(),
+            'Votre rendu pour le projet "' . $project->getTitle() . '" a été renvoyé. Veuillez le corriger et le soumettre à nouveau.',
+            NotificationType::WARNING,
+            $grade->getStudent()
+        );
+
+        $entityManager->flush();
         $this->addFlash('success', 'Rendu renvoyé à l\'étudiant.');
 
         return $this->redirectToRoute('app_projects_show', ['id' => $project->getId()], Response::HTTP_SEE_OTHER);
