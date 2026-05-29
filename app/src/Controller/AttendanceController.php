@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Promotions;
 use App\Entity\Attendance;
 use App\Enum\AttendanceType;
+use App\Repository\PromotionsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,10 +16,18 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AttendanceController extends AbstractController
 {
     #[Route('/attendance', name: 'app_attendance')]
-    public function index(): Response
+    public function index(PromotionsRepository $promotionsRepository): Response
     {
+        $teacher = $this->getUser();
+
+        if (!$teacher) {
+            throw $this->createAccessDeniedException('You must be logged in to view this page.');
+        }
+
+        $teacherPromotions = $promotionsRepository->findBy(['professor' => $teacher]);
+
         return $this->render('attendance/index.html.twig', [
-            'controller_name' => 'AttendanceController',
+            'promotions' => $teacherPromotions,
         ]);
     }
 
