@@ -38,6 +38,10 @@ class Grades
     #[ORM\Column(enumType: GradeStatus::class)]
     private ?GradeStatus $status = null;
 
+    #[ORM\ManyToOne(inversedBy: 'grades')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Promotions $promotion = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -123,6 +127,18 @@ class Grades
     public function setStatus(GradeStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPromotion(): ?Promotions
+    {
+        return $this->promotion;
+    }
+
+    public function setPromotion(?Promotions $promotion): static
+    {
+        $this->promotion = $promotion;
 
         return $this;
     }

@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Promotions;
+use App\Entity\PromotionUsers;
 use App\Entity\User;
 use App\Form\NewMemberType;
 use App\Repository\PromotionsRepository;
@@ -33,9 +35,10 @@ final class AdminController extends AbstractController
         $promoParam  = $request->query->get('promotion', '');
         $promotionId = ($promoParam !== '' && ctype_digit($promoParam)) ? (int) $promoParam : null;
 
-        $teacher = $isAdmin ? null : $currentUser;
+        /* $teacher = $isAdmin ? null : $currentUser; */ //plus necessaire car on veut une liste compléte d'utilisateurs, pas seuelment ceux inscrits
+        /*  $data     = $userRepository->findStudents($teacher, $search, $promotionId); */
 
-        $data     = $userRepository->findStudents($teacher, $search, $promotionId);
+        $data     = $userRepository->findStudents();
         $students = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         $promotions = $isAdmin
@@ -52,7 +55,7 @@ final class AdminController extends AbstractController
 
     #[Route('/users/{id}', name: 'app_students_show', methods: ['GET'])]
     #[IsGranted('ROLE_TEACHER')]
-    public function show(User $user, UserRepository $userRepository): Response
+    public function show(User $user, PromotionsRepository $promotionsRepository, UserRepository $userRepository): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             $allowed = $userRepository->findStudents($this->getUser());
@@ -65,6 +68,7 @@ final class AdminController extends AbstractController
 
         return $this->render('admin/student_show.html.twig', [
             'student' => $user,
+            'promotions' => $promotionsRepository->findAll()
         ]);
     }
 
@@ -87,6 +91,41 @@ final class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', $user->getFirstname() . ' ' . $user->getLastname() . ' → ' . $role);
+
+        $redirect = $request->getPayload()->getString('redirect', '');
+        return $this->redirectToRoute($redirect === 'members' ? 'app_admin_members' : 'app_admin_users');
+    }
+
+    #[Route('/users/{id}/promo', name: 'app_admin_set_promo', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function setPromo(Request $request, User $user, PromotionsRepository $promotions, EntityManagerInterface $em): Response
+    {
+        if (!$this->isCsrfTokenValid('set_promo_' . $user->getId(), $request->getPayload()->getString('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $chosenPromotions = $request->getPayload()->all('promotion');
+
+        foreach ($user->getPromotionUsers() as $oldLink) {
+            $em->remove($oldLink);
+        }
+
+        $selectedPromotions = $promotions->findBy(['id' => $chosenPromotions]);
+
+        foreach ($selectedPromotions as $p) {
+            $promotionUser = new PromotionUsers();
+            $promotionUser->setUser($user);
+            $promotionUser->setPromotion($p);
+            $em->persist($promotionUser);
+        }
+        $em->flush();
+
+        $promoNames = array_map(fn($p) => $p->getName(), $selectedPromotions);
+        $this->addFlash('success', sprintf(
+            'Promotions mises à jour pour %s : %s',
+            $user->getFirstname(),
+            empty($promoNames) ? 'Aucune' : implode(', ', $promoNames)
+        ));
 
         $redirect = $request->getPayload()->getString('redirect', '');
         return $this->redirectToRoute($redirect === 'members' ? 'app_admin_members' : 'app_admin_users');
@@ -119,8 +158,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_members');
         }
 
-        return $this->render('admin/member_new.html.twig', [
-            'form' => $form,
-        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
+        $redirect = $request->getPayload()->getString('redirect', '');
+        return $this->redirectToRoute($redirect === 'members' ? 'app_admin_members' : 'app_admin_users');
     }
 }

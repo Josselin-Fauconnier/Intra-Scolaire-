@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Grades;
+use App\Entity\User;
 use App\Entity\Projects;
 use App\Enum\GradeStatus;
 use App\Enum\NotificationType;
@@ -28,6 +29,7 @@ final class ProjectsController extends AbstractController
     public function index(ProjectsRepository $projectsRepository, PaginatorInterface $paginator, Request $request): Response
     {
         $user = $this->getUser();
+        assert($user instanceof User);
 
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR')) {
             $data = $projectsRepository->findAll();
@@ -72,46 +74,68 @@ final class ProjectsController extends AbstractController
     public function show(Request $request, Projects $project, GradesRepository $gradesRepository, EntityManagerInterface $entityManager, NotificationService $notificationService): Response
     {
         $user = $this->getUser();
+        assert($user instanceof User);
+
+        $grade = $gradesRepository->findOneBy([
+            'project' => $project,
+            'student' => $user,
+        ]);
+
+        if (!$grade && $this->isGranted('ROLE_STUDENT')) {
+            $userPromotions = $user->getPromotionUsers()->map(fn($pu) => $pu->getPromotion());
+            $projectPromotions = $project->getPromotions();
+
+            $matchingPromotion = $userPromotions->filter(function ($promo) use ($projectPromotions) {
+                return $projectPromotions->contains($promo);
+            })->first();
+
+
+            if ($matchingPromotion) {
+                $grade = new Grades();
+                $grade->setProject($project);
+                $grade->setPromotion($matchingPromotion);
+                $grade->setStudent($user);
+                $grade->setStatus(GradeStatus::PENDING);
+                $grade->setUpdateHistory(new DateTime());
+                $entityManager->persist($grade);
+                $entityManager->flush();
+            }
+        }
 
         if (!$this->isGranted('ROLE_TEACHER') && !$project->isVisibility()) {
             throw $this->createAccessDeniedException();
         }
 
-        $myGrade = null;
         $form    = null;
 
-        if (!$this->isGranted('ROLE_TEACHER')) {
-            $myGrade = $gradesRepository->findOneBy(['project' => $project, 'student' => $user]);
+        if ($grade && $grade->getStatus() === GradeStatus::PENDING) {
+            $form = $this->createForm(GradeSubmission::class, $grade, [
+                'action' => $this->generateUrl('app_projects_show', ['id' => $project->getId()]),
+            ]);
+            $form->handleRequest($request);
 
-            if ($myGrade && $myGrade->getStatus() === GradeStatus::PENDING) {
-                $form = $this->createForm(GradeSubmission::class, $myGrade, [
-                    'action' => $this->generateUrl('app_projects_show', ['id' => $project->getId()]),
-                ]);
-                $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $grade->setStatus(GradeStatus::SUBMITTED);
+                $grade->setUpdateHistory(new DateTime());
 
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $myGrade->setStatus(GradeStatus::SUBMITTED);
-                    $myGrade->setUpdateHistory(new DateTime());
-
-                    $teachers = [];
-                    foreach ($project->getPromotions() as $promotion) {
-                        $prof = $promotion->getProfessor();
-                        if ($prof && !in_array($prof->getId(), array_map(fn($t) => $t->getId(), $teachers), true)) {
-                            $teachers[] = $prof;
-                        }
+                $teachers = [];
+                foreach ($project->getPromotions() as $promotion) {
+                    $prof = $promotion->getProfessor();
+                    if ($prof && !in_array($prof->getId(), array_map(fn($t) => $t->getId(), $teachers), true)) {
+                        $teachers[] = $prof;
                     }
-                    $notificationService->notify(
-                        'Nouveau rendu : ' . $project->getTitle(),
-                        $user->getFirstname() . ' ' . $user->getLastname() . ' a soumis son projet.',
-                        NotificationType::ALERT,
-                        ...$teachers
-                    );
-
-                    $entityManager->flush();
-                    $this->addFlash('success', 'Projet soumis avec succès.');
-
-                    return $this->redirectToRoute('app_projects_show', ['id' => $project->getId()]);
                 }
+                $notificationService->notify(
+                    'Nouveau rendu : ' . $project->getTitle(),
+                    $user->getFirstname() . ' ' . $user->getLastname() . ' a soumis son projet.',
+                    NotificationType::ALERT,
+                    ...$teachers
+                );
+
+                $entityManager->flush();
+                $this->addFlash('success', 'Projet soumis avec succès.');
+
+                return $this->redirectToRoute('app_projects_show', ['id' => $project->getId()]);
             }
         }
 
@@ -122,10 +146,11 @@ final class ProjectsController extends AbstractController
         return $this->render('projects/show.html.twig', [
             'project'        => $project,
             'grades'         => $grades,
-            'myGrade'        => $myGrade,
+            'myGrade'        => $grade,
             'submissionForm' => $form?->createView(),
         ]);
     }
+
 
     #[Route('/{id}/toggle', name: 'app_projects_toggle', methods: ['POST'])]
     #[IsGranted('ROLE_TEACHER')]

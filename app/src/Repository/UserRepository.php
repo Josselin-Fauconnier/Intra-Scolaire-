@@ -57,19 +57,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findStudents(?User $teacher = null, string $search = '', ?int $promotionId = null): array
     {
         $qb = $this->createQueryBuilder('u')
-            ->join('u.promotionUsers', 'pu')
-            ->join('pu.promotion', 'pr')
+            ->leftjoin('u.promotionUsers', 'pu')
+            ->leftjoin('pu.promotion', 'pr')
             ->orderBy('u.lastname', 'ASC')
             ->addOrderBy('u.firstname', 'ASC');
 
         if ($teacher !== null) {
             $qb->andWhere('pr.professor = :teacher')
-               ->setParameter('teacher', $teacher);
+                ->setParameter('teacher', $teacher);
         }
 
         if ($promotionId !== null) {
             $qb->andWhere('pr.id = :promo')
-               ->setParameter('promo', $promotionId);
+                ->setParameter('promo', $promotionId);
         }
 
         if ($search !== '') {
