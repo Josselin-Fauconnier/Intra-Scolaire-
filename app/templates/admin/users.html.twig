@@ -29,8 +29,10 @@
             <div>
                 <label for="promo-select">Promotion</label>
                 <select name="promotion" class="form-select" id="promo-select">
+                    {% if is_granted('ROLE_ADMIN') %}
                     <option value="">Toutes les promotions</option>
                     <option value="none" {% if withoutPromo ?? false %}selected{% endif %}>Sans promotion</option>
+                    {% endif %}
                     {% for promo in promotions %}
                         <option value="{{ promo.id }}" {% if selectedPromotion == promo.id %}selected{% endif %}>
                             {{ promo.name }}
