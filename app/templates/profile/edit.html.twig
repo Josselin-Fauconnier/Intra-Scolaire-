@@ -11,34 +11,52 @@
         </a>
     </div>
 
-    {{ form_start(form, {'action': path('app_profile_edit')}) }}
-        <div class="mb-3">
-            {{ form_label(form.firstname) }}
-            {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.firstname) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.lastname) }}
-            {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.lastname) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.phone_number) }}
-            {{ form_widget(form.phone_number, {'attr': {'class': 'form-control', 'placeholder': '+33600000000'}}) }}
-            {{ form_errors(form.phone_number) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.github) }}
-            {{ form_widget(form.github, {'attr': {'class': 'form-control', 'placeholder': 'https://github.com/...'}}) }}
-            {{ form_errors(form.github) }}
-        </div>
-        <div class="mb-3">
-            {{ form_label(form.google_drive) }}
-            {{ form_widget(form.google_drive, {'attr': {'class': 'form-control', 'placeholder': 'https://drive.google.com/...'}}) }}
-            {{ form_errors(form.google_drive) }}
-        </div>
+    {{ form_start(form, {'action': path('app_profile_edit'), 'attr': {'class': 'dashboard-form'}}) }}
+        <div class="dashboard-form-shell dashboard-form-shell-compact">
+            <div class="dashboard-form-intro">
+                <span class="pill">Profil</span>
+                <p class="dashboard-note">Mets a jour tes coordonnees et tes liens utiles sans quitter le dashboard.</p>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
+            {% if form_errors(form) %}
+                <div class="dashboard-flash dashboard-flash-danger">
+                    {{ form_errors(form) }}
+                </div>
+            {% endif %}
+
+            <div class="dashboard-form-fields">
+                <div>
+                    {{ form_label(form.firstname) }}
+                    {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.firstname) }}
+                </div>
+                <div>
+                    {{ form_label(form.lastname) }}
+                    {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.lastname) }}
+                </div>
+                <div>
+                    {{ form_label(form.phone_number) }}
+                    {{ form_widget(form.phone_number, {'attr': {'class': 'form-control', 'placeholder': '+33600000000'}}) }}
+                    {{ form_errors(form.phone_number) }}
+                </div>
+                <div>
+                    {{ form_label(form.github) }}
+                    {{ form_widget(form.github, {'attr': {'class': 'form-control', 'placeholder': 'https://github.com/...'}}) }}
+                    {{ form_errors(form.github) }}
+                </div>
+                <div>
+                    {{ form_label(form.google_drive) }}
+                    {{ form_widget(form.google_drive, {'attr': {'class': 'form-control', 'placeholder': 'https://drive.google.com/...'}}) }}
+                    {{ form_errors(form.google_drive) }}
+                </div>
+            </div>
+
+            <div class="dashboard-form-actions">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{{ path('app_profile') }}" class="btn btn-outline-secondary" data-turbo-frame="main-frame">Annuler</a>
+            </div>
+        </div>
     {{ form_end(form) }}
 </turbo-frame>
 {% endblock %}

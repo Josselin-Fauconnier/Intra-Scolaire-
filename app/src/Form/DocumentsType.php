@@ -15,34 +15,48 @@ class DocumentsType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $userChoices = $options['user_choices'];
+
         $builder
             ->add('type')
-            ->add('title')
-            ->add('user', EntityType::class, [ // Souvent le champ s'appelle 'user' et non 'user_id' dans l'entité
-                'class' => User::class, // Avec un U majuscule !
-                'choice_label' => 'email', // C'est plus sympa d'afficher l'email que l'ID dans la liste
-            ])
-            ->add('attachment', FileType::class, [
-                'label' => 'Fichier du cours (PDF)',
-                'mapped' => false,
-                'required' => false,
-                'constraints' => [
-                    new File(
-                        maxSize: '5M', // Argument nommé (PHP 8)
-                        mimeTypes: [
-                            'application/pdf',
-                            'application/x-pdf',
+            ->add('title');
 
-                        ],
-                        mimeTypesMessage: "Merci d'uploader un document valide (PDF )"
-                    )
-                ],
-            ]);
+        if ($userChoices !== false) {
+            $fieldOptions = [
+                'class'        => User::class,
+                'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
+            ];
+
+            if (is_array($userChoices)) {
+                $fieldOptions['choices'] = $userChoices;
+            }
+
+            $builder->add('user', EntityType::class, $fieldOptions);
+        }
+
+        $builder->add('attachment', FileType::class, [
+            'label'       => 'Fichier du cours (PDF)',
+            'mapped'      => false,
+            'required'    => false,
+            'constraints' => [
+                new File(
+                    maxSize: '20M',
+                    mimeTypes: [
+                        'application/pdf',
+                        'application/x-pdf',
+                    ],
+                    mimeTypesMessage: "Merci d'uploader un document valide (PDF)"
+                ),
+            ],
+        ]);
     }
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Documents::class,
+            'data_class'   => Documents::class,
+            'user_choices' => null,
         ]);
+        $resolver->setAllowedTypes('user_choices', ['null', 'bool', 'array']);
     }
 }

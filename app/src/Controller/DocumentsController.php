@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Documents;
 use App\Form\DocumentsType;
 use App\Repository\DocumentsRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,12 +27,16 @@ final class DocumentsController extends AbstractController
     #[Route('', name: 'app_documents_index', methods: ['GET'])]
     public function index(DocumentsRepository $documentsRepository, PaginatorInterface $paginator, Request $request): Response
     {
-        $query = $documentsRepository->createQueryBuilder('d')
-            ->orderBy('d.id', 'DESC')
-            ->getQuery();
+        $qb = $documentsRepository->createQueryBuilder('d')
+            ->orderBy('d.id', 'DESC');
+
+        if (!$this->isGranted('ROLE_TEACHER')) {
+            $qb->where('d.user = :user')
+               ->setParameter('user', $this->getUser());
+        }
 
         $pagination = $paginator->paginate(
-            $query,
+            $qb->getQuery(),
             $request->query->getInt('page', 1),
             20
         );
@@ -42,14 +47,24 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_documents_new', methods: ['GET', 'POST'])]
-
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, UserRepository $userRepository): Response
     {
         if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
             throw $this->createAccessDeniedException("Accès refusé.");
         }
+
+        $currentUser = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $userChoices = null;
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $userChoices = $userRepository->findStudents($currentUser);
+        } else {
+            $userChoices = false;
+        }
+
         $document = new Documents();
-        $form = $this->createForm(DocumentsType::class, $document);
+        $form = $this->createForm(DocumentsType::class, $document, ['user_choices' => $userChoices]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -86,13 +101,27 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_documents_edit', methods: ['GET', 'POST'])]
-
-    public function edit(Request $request, Documents $document, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(Request $request, Documents $document, EntityManagerInterface $entityManager, SluggerInterface $slugger, UserRepository $userRepository): Response
     {
         if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
             throw $this->createAccessDeniedException("Accès refusé.");
         }
-        $form = $this->createForm(DocumentsType::class, $document);
+
+        if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $currentUser = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $userChoices = null;
+        } elseif ($this->isGranted('ROLE_TEACHER')) {
+            $userChoices = $userRepository->findStudents($currentUser);
+        } else {
+            $userChoices = false;
+        }
+
+        $form = $this->createForm(DocumentsType::class, $document, ['user_choices' => $userChoices]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -123,6 +152,10 @@ final class DocumentsController extends AbstractController
     #[Route('/{id}', name: 'app_documents_show', methods: ['GET'])]
     public function show(Documents $document): Response
     {
+        if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
         return $this->render('documents/show.html.twig', [
             'document' => $document,
         ]);
@@ -134,6 +167,9 @@ final class DocumentsController extends AbstractController
     {
         if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
             throw $this->createAccessDeniedException("Accès refusé.");
+        }
+        if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException();
         }
         if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->getPayload()->getString('_token'))) {
             $path = $this->getParameter('documents_directory') . '/' . $document->getPath();

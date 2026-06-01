@@ -35,10 +35,8 @@ final class AdminController extends AbstractController
         $promoParam  = $request->query->get('promotion', '');
         $promotionId = ($promoParam !== '' && ctype_digit($promoParam)) ? (int) $promoParam : null;
 
-        /* $teacher = $isAdmin ? null : $currentUser; */ //plus necessaire car on veut une liste compléte d'utilisateurs, pas seuelment ceux inscrits
-        /*  $data     = $userRepository->findStudents($teacher, $search, $promotionId); */
-
-        $data     = $userRepository->findStudents();
+        $teacher = $isAdmin ? null : $currentUser; 
+        $data     = $userRepository->findStudents($teacher, $search, $promotionId); 
         $students = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         $promotions = $isAdmin

@@ -79,14 +79,15 @@ final class NotificationsController extends AbstractController
                     throw $this->createAccessDeniedException();
                 }
             }
-
+            $notification->setSender($currentUser);
+            $notification->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($notification);
 
             $recipients = match ($audience) {
                 'students'  => $userRepository->findByRole('ROLE_STUDENT'),
                 'teachers'  => $userRepository->findByRole('ROLE_TEACHER'),
                 'promotion' => $promotion
-                    ? array_map(fn($pu) => $pu->getUserId(), $promotion->getpromotionUsers()->toArray())
+                    ? array_map(fn($pu) => $pu->getUser(), $promotion->getpromotionUsers()->toArray())
                     : [],
                 default => $userRepository->findAll(),
             };

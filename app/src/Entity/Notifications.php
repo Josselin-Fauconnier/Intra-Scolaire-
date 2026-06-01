@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\NotificationType;
 use App\Repository\NotificationsRepository;
+use App\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,6 +26,13 @@ class Notifications
 
     #[ORM\Column(enumType: NotificationType::class)]
     private ?NotificationType $type = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $sender = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     /**
      * @var Collection<int, NotificationRecipients>
@@ -74,6 +82,30 @@ class Notifications
     public function setType(NotificationType $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getSender(): ?User
+    {
+        return $this->sender;
+    }
+
+    public function setSender(?User $sender): static
+    {
+        $this->sender = $sender;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }
