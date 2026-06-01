@@ -857,6 +857,211 @@ body {
 }
 
 /* =========================================================
+   DOCUMENTS — GOOGLE DRIVE STYLE
+========================================================= */
+
+.gdrive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.gdrive-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.gdrive-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(35, 36, 72, 0.22);
+}
+
+.gdrive-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gdrive-thumb-icon {
+  font-size: 3.5rem;
+}
+
+.gdrive-thumb-icon--pdf   { color: #b63636; }
+.gdrive-thumb-icon--video { color: #5b7f9f; }
+.gdrive-thumb-icon--autre { color: #7a7cb8; }
+
+.gdrive-footer {
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: grid;
+  gap: 0.2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.gdrive-name {
+  font-size: 0.85rem;
+  font-weight: var(--font-medium);
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gdrive-owner {
+  font-size: 0.72rem;
+  color: var(--color-text-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gdrive-hover-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.gdrive-card:hover .gdrive-hover-actions {
+  opacity: 1;
+}
+
+.gdrive-btn-open,
+.gdrive-btn-dl,
+.gdrive-btn-edit {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: white;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast);
+}
+
+.gdrive-btn-open:hover  { background: var(--color-tertiary); color: var(--color-primary); }
+.gdrive-btn-dl:hover    { background: #e8f4e8; color: #3e6743; }
+.gdrive-btn-edit:hover  { background: #fff4ef; color: var(--color-secondary); }
+
+/* Modal */
+
+.gdrive-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.gdrive-modal--open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gdrive-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.gdrive-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 960px);
+  height: min(90vh, 860px);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gdrive-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.2rem;
+  border-bottom: 1px solid var(--color-border);
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.gdrive-modal-title {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gdrive-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.gdrive-modal-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.gdrive-modal-dl:hover { opacity: 0.85; color: white; }
+
+.gdrive-modal-close {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--color-text-soft);
+  transition: background var(--transition-fast);
+}
+
+.gdrive-modal-close:hover { background: #f1f3f4; }
+
+.gdrive-modal-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+/* =========================================================
    TURBO
 ========================================================= */
 
