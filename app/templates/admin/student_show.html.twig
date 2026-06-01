@@ -48,7 +48,7 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('set_promo_' ~ student.id) }}">
                 <select name="promotion[]" multiple class="form-select form-select-sm" style="width: auto;">
                     {% for promotion in promotions %}
-                        <option value={{promotion.id}}>{{promotion.name}}</option>
+                        <option value="{{ promotion.id }}">{{ promotion.name }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="btn btn-sm btn-outline-primary">✓</button>
@@ -151,23 +151,8 @@
                             </div>
                         </div>
                     {% else %}
-                        <ul class="list-group list-group-flush">
-                        {% for absence in student.absences %}
-                            <li class="list-group-item">
-                                <i class="bi bi-calendar-event text-muted"></i>
-                                {{ absence.startDate|date('d/m/Y') }}
-                                {% if absence.endDate and absence.endDate != absence.startDate %}
-                                    → {{ absence.endDate|date('d/m/Y') }}
-                                {% endif %}
-                                {% if absence.document %}
-                                    <span class="badge bg-info ms-2">Justifiée</span>
-                                {% else %}
-                                    <span class="badge bg-danger ms-2">Non justifiée</span>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                        <div class="dashboard-empty">Aucun document.</div>
+                    {% endfor %}
                 </div>
             </section>
 
@@ -192,7 +177,7 @@
                                 </div>
                             </div>
                             <div class="dashboard-list-actions">
-                                {% if absence.documentId %}
+                                {% if absence.document %}
                                     <span class="badge bg-info">Justifiee</span>
                                 {% else %}
                                     <span class="badge bg-danger">Non justifiee</span>
