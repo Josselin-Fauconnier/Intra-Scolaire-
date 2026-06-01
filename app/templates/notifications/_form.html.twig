@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'dashboard-form'}}) }}
+{{ form_start(form, {'action': form_action}) }}
     <div class="dashboard-form-shell">
         <div class="dashboard-form-intro">
             <span class="pill">Notification</span>
@@ -12,7 +12,31 @@
         {% endif %}
 
         <div class="dashboard-form-fields">
-            {{ form_widget(form) }}
+            <div>
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title) }}
+                {{ form_errors(form.title) }}
+            </div>
+            <div>
+                {{ form_label(form.message) }}
+                {{ form_widget(form.message) }}
+                {{ form_errors(form.message) }}
+            </div>
+            <div>
+                {{ form_label(form.type) }}
+                {{ form_widget(form.type) }}
+                {{ form_errors(form.type) }}
+            </div>
+            <div>
+                {{ form_label(form.audience) }}
+                {{ form_widget(form.audience, {'attr': {'id': 'audience-select'}}) }}
+                {{ form_errors(form.audience) }}
+            </div>
+            <div>
+                {{ form_label(form.promotion) }}
+                {{ form_widget(form.promotion) }}
+                {{ form_errors(form.promotion) }}
+            </div>
         </div>
 
         <div class="dashboard-form-actions">

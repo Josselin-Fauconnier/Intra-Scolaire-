@@ -47,7 +47,7 @@ class NotificationsType extends AbstractType
                 'choice_label' => 'name',
                 'mapped'       => false,
                 'required'     => false,
-                'placeholder'  => '— Choisir une promotion —',
+                'placeholder'  => 'Toutes les promotions',
                 'query_builder' => function (PromotionsRepository $er) use ($currentUser, $isAdmin) {
                     $qb = $er->createQueryBuilder('pr')->orderBy('pr.name', 'ASC');
                     if (!$isAdmin) {

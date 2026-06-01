@@ -11,6 +11,6 @@
         </a>
     </div>
 
-    {{ include('notifications/_form.html.twig') }}
+    {{ include('notifications/_form.html.twig', {'form_action': path('app_notifications_new')}) }}
 </turbo-frame>
 {% endblock %}

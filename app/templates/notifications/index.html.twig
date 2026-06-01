@@ -7,7 +7,9 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Notifications</h2>
         {% if is_granted('ROLE_TEACHER') %}
-            <a href="{{ path('app_notifications_new') }}" class="btn btn-success btn-sm">+ Nouvelle notification</a>
+            <a href="{{ path('app_notifications_new') }}" class="btn btn-primary btn-sm" data-turbo-frame="main-frame">
+                <i class="bi bi-plus-lg"></i> Nouvelle
+            </a>
         {% endif %}
     </div>
 
@@ -15,69 +17,81 @@
         <div class="dashboard-flash dashboard-flash-success mb-3">{{ message }}</div>
     {% endfor %}
 
-    <div class="responsive-table-wrapper">
-        <table class="table table-hover responsive-table">
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Titre</th>
-                    <th>Message</th>
-                    <th>Lecture</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for recipient in recipients %}
-                {% set notif = recipient.notificationId %}
-                {% set type = notif.type.value %}
-                <tr class="{{ recipient.isRead ? '' : 'dashboard-unread' }}">
-                    <td data-label="Type">
-                        {% if type == 'alert' %}
-                            <span class="badge bg-primary">Alerte</span>
-                        {% elseif type == 'warning' %}
-                            <span class="badge bg-warning">Avertissement</span>
-                        {% elseif type == 'error' %}
-                            <span class="badge bg-danger">Erreur</span>
-                        {% elseif type == 'success' %}
-                            <span class="badge bg-success">Succes</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ type }}</span>
+    <div class="notif-list">
+        {% for recipient in recipients %}
+            {% set notif = recipient.notificationId %}
+            {% set sender = notif.sender %}
+            {% set initial = sender ? (sender.firstname|first ~ sender.lastname|first)|upper : 'IS' %}
+            {% set senderName = sender ? (sender.firstname ~ ' ' ~ sender.lastname) : 'Intra Scolaire' %}
+            {% set type = notif.type.value %}
+
+            <div class="notif-item {{ recipient.isRead ? 'notif-read' : 'notif-unread' }}" data-notif-id="{{ recipient.id }}">
+                <button class="notif-row" type="button" aria-expanded="false">
+                    <div class="notif-avatar notif-avatar--{{ type }}">{{ initial }}</div>
+                    <div class="notif-meta">
+                        <span class="notif-sender">{{ senderName }}</span>
+                        <span class="notif-title">{{ notif.title }}</span>
+                    </div>
+                    <div class="notif-aside">
+                        {% if not recipient.isRead %}
+                            <span class="notif-dot"></span>
                         {% endif %}
-                    </td>
-                    <td data-label="Titre">{{ notif.title }}</td>
-                    <td data-label="Message">{{ notif.message }}</td>
-                    <td data-label="Lecture">
-                        <span class="dashboard-read-state">
-                            <i class="bi {{ recipient.isRead ? 'bi-check2-circle' : 'bi-bell-fill' }}"></i>
-                            {{ recipient.isRead ? 'Lue' : 'Non lue' }}
+                        <span class="notif-badge notif-badge--{{ type }}">
+                            {% if type == 'alert' %}Alerte
+                            {% elseif type == 'warning' %}Avertissement
+                            {% elseif type == 'error' %}Erreur
+                            {% elseif type == 'success' %}Succès
+                            {% else %}{{ type }}{% endif %}
                         </span>
-                    </td>
-                    <td data-label="Actions">
-                        <div class="table-actions">
-                            <a href="{{ path('app_notifications_show', {'id': notif.id}) }}" class="btn btn-outline-info btn-sm">Voir</a>
-                            {% if not recipient.isRead %}
-                                <form method="post" action="{{ path('app_notifications_read', {'id': recipient.id}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('read' ~ recipient.id) }}">
-                                    <button class="btn btn-outline-secondary btn-sm">Marquer lue</button>
-                                </form>
-                            {% endif %}
-                            {% if is_granted('ROLE_TEACHER') %}
-                                <a href="{{ path('app_notifications_edit', {'id': notif.id}) }}" class="btn btn-outline-warning btn-sm">Modifier</a>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-            {% else %}
-                <tr class="table-empty-row">
-                    <td colspan="5" class="table-empty-state">Aucune notification.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        {% if notif.createdAt %}
+                            <span class="notif-date">{{ notif.createdAt|date('d/m/Y') }}</span>
+                        {% endif %}
+                        <i class="bi bi-chevron-down notif-chevron"></i>
+                    </div>
+                </button>
+
+                <div class="notif-body">
+                    <p class="notif-message">{{ notif.message }}</p>
+                    {% if not recipient.isRead %}
+                        <form method="post"
+                              action="{{ path('app_notifications_read', {'id': recipient.id}) }}"
+                              class="notif-read-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('read' ~ recipient.id) }}">
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="dashboard-empty">Aucune notification.</div>
+        {% endfor %}
     </div>
 
     <div class="d-flex justify-content-center mt-3">
         {{ knp_pagination_render(recipients) }}
     </div>
+
+<script>
+(function () {
+    document.querySelectorAll('.notif-item').forEach(function (item) {
+        const btn  = item.querySelector('.notif-row');
+        const body = item.querySelector('.notif-body');
+        const form = item.querySelector('.notif-read-form');
+
+        btn.addEventListener('click', function () {
+            const open = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!open));
+            body.classList.toggle('notif-body--open', !open);
+            item.querySelector('.notif-chevron').classList.toggle('notif-chevron--open', !open);
+
+            if (!open && form) {
+                form.requestSubmit();
+                item.classList.remove('notif-unread');
+                item.classList.add('notif-read');
+                item.querySelector('.notif-dot')?.remove();
+            }
+        });
+    });
+})();
+</script>
 </turbo-frame>
 {% endblock %}

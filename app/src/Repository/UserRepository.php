@@ -35,12 +35,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function findByRole(string $role): array
     {
-        return $this->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%' . $role . '%')
+        $users = $this->createQueryBuilder('u')
             ->orderBy('u.lastname', 'ASC')
+            ->addOrderBy('u.firstname', 'ASC')
             ->getQuery()
             ->getResult();
+
+        return array_values(array_filter($users, fn(User $u) => in_array($role, $u->getRoles(), true)));
     }
 
     public function findNonStudents(): array

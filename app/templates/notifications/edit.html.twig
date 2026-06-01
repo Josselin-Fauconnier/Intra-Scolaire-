@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    {{ include('notifications/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+    {{ include('notifications/_form.html.twig', {'button_label': 'Enregistrer', 'form_action': path('app_notifications_edit', {'id': notification.id})}) }}
 
     {{ include('notifications/_delete_form.html.twig') }}
 </turbo-frame>
