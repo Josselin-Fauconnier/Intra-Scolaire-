@@ -72,16 +72,31 @@ final class AttendanceController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $students = $userRepo->findStudents(promotionId: $promotion->getId());
-
         $today = new \DateTime('today');
-        $existingAttendances = $attendanceRepo->findTodayAttendanceByPromotion($promotion, $today);
+
+        $dateParam = $request->query->get('date');
+        $selectedDate = $dateParam ? new \DateTime($dateParam) : $today;
+
+        $isToday = $selectedDate->format('Y-m-d') === $today->format('Y-m-d');
+
+        $existingAttendances = $attendanceRepo->findTodayAttendanceByPromotion($promotion, $selectedDate);
 
         $attendanceMap = [];
         foreach ($existingAttendances as $attendance) {
             $attendanceMap[$attendance->getStudent()->getId()] = $attendance;
         }
 
-        if ($request->getMethod() === "POST") {
+        $allDatesRaw = $attendanceRepo->findDistinctDatesByPromotion($promotion);
+        $availableDates = [];
+        $availableDates[$today->format('Y-m-d')] = $today;
+
+        foreach ($allDatesRaw as $row) {
+            $d = $row['date'];
+            $availableDates[$d->format('Y-m-d')] = $d;
+        }
+        krsort($availableDates); // Trier 
+
+        if ($request->getMethod() === "POST" && $isToday) {
             $data = $request->getPayload()->all('attendance');
 
             foreach ($students as $student) {
@@ -98,7 +113,6 @@ final class AttendanceController extends AbstractController
                 }
 
                 $attendance->setStatus((AttendanceType::tryFrom($status) !== null) ? AttendanceType::tryFrom($status) : AttendanceType::ABSENT);
-
                 $em->persist($attendance);
             }
 
@@ -112,7 +126,9 @@ final class AttendanceController extends AbstractController
             'promotion' => $promotion,
             'students' => $students,
             'attendanceMap' => $attendanceMap,
-            'date' => $today
+            'date' => $selectedDate,
+            'availableDates' => $availableDates,
+            'isToday' => $isToday
         ]);
     }
 }

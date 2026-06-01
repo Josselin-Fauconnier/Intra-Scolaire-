@@ -2,8 +2,23 @@
 
 {% block body %}
 <turbo-frame id="main-frame">
-    <h2>Appel du {{ date|date('d/m/Y') }} : {{ promotion.name }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Appel du {{ date|date('d/m/Y') }} : {{ promotion.name }}</h2>
 
+        {# Formulaire de sélection de la date #}
+        <form method="get" action="{{ path('app_attendance_sheet', {id: promotion.id}) }}" data-turbo-frame="main-frame">
+            <label for="date-select" class="form-label me-2 fw-bold">Historique :</label>
+            <select name="date" id="date-select" class="form-select d-inline-block w-auto" onchange="this.form.requestSubmit()">
+                {% for key, dateObj in availableDates %}
+                    <option value="{{ key }}" {{ date|date('Y-m-d') == key ? 'selected' : '' }}>
+                        {{ key == "now"|date('Y-m-d') ? "Aujourd'hui" : dateObj|date('d/m/Y') }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {# Formulaire principal de l'appel #}
     <form action="{{ path('app_attendance_sheet', {id: promotion.id}) }}" method="post">
         <table class="table">
             <thead>
@@ -21,24 +36,37 @@
                     
                     <tr>
                         <td>{{ student.firstname|capitalize }} {{ student.lastname|upper }}</td>
+                        
+                        {# On ajoute l'attribut 'disabled' si ce n'est pas aujourd'hui (not isToday) #}
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="present" 
-                                   {{ currentStatus == 'present' ? 'checked' : '' }}>
+                                   {{ currentStatus == 'present' ? 'checked' : '' }}
+                                   {{ not isToday ? 'disabled' : '' }}>
                         </td>
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="late" 
-                                   {{ currentStatus == 'late' ? 'checked' : '' }}>
+                                   {{ currentStatus == 'late' ? 'checked' : '' }}
+                                   {{ not isToday ? 'disabled' : '' }}>
                         </td>
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="absent" 
-                                   {{ currentStatus == 'absent' ? 'checked' : '' }}>
+                                   {{ currentStatus == 'absent' ? 'checked' : '' }}
+                                   {{ not isToday ? 'disabled' : '' }}>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
+        
         <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Valider l'appel</button>
+            {# On affiche le bouton de validation UNIQUEMENT si c'est aujourd'hui #}
+            {% if isToday %}
+                <button type="submit" class="btn btn-primary">Valider l'appel</button>
+            {% else %}
+                <div class="alert alert-info d-inline-block py-2 px-3 mb-0 me-2">
+                    <i class="bi bi-lock"></i> Consultation (Historique verrouillé)
+                </div>
+            {% endif %}
             <a href="{{ path('app_attendance') }}" class="btn btn-secondary">Retour</a>
         </div>
     </form>

@@ -58,4 +58,15 @@ class AttendanceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findDistinctDatesByPromotion(Promotions $promotion): array
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a.date')
+            ->where('a.promotion = :promotion')
+            ->setParameter('promotion', $promotion)
+            ->orderBy('a.date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
