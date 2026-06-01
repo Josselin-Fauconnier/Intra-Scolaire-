@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<turbo-frame id="main-frame">
+  <h1>Mes promotions</h1>
+    {% if promotions is not empty %}
+        <ul>
+            {% for promotion in promotions %}
+                <li>
+                    <a href="{{ path('app_attendance_sheet', {'id': promotion.id}) }}">
+                        {{ promotion.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Vous n'avez aucune promotion.</p>
+    {% endif %}
+</turbo-frame>
+{% endblock %}  

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\RouterInterface;
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 5)]
 class TurboFrameGuardListener
 {
-    private const PUBLIC_ROUTES = ['app_dashboard', 'app_login', 'app_register', 'app_logout', 'app_profile', 'app_profile_edit', 'app_admin_users', 'app_admin_set_role', 'app_students_show', 'app_admin_members', 'app_admin_members_new', 'app_absences_index', 'app_absences_new', 'app_absences_show', 'app_absences_edit', 'app_absences_delete', 'app_projects_index', 'app_projects_new', 'app_projects_show', 'app_projects_edit', 'app_projects_delete', 'app_projects_toggle', 'app_projects_sendback', 'app_grades_index', 'app_grades_new', 'app_grades_show', 'app_grades_edit', 'app_grades_delete'];
+    private const PUBLIC_ROUTES = ['app_dashboard', 'app_login', 'app_register', 'app_logout', 'app_profile', 'app_profile_edit', 'app_admin_users', 'app_admin_set_role', 'app_students_show', 'app_admin_members', 'app_admin_members_new', 'app_absences_index', 'app_absences_new', 'app_absences_show', 'app_absences_edit', 'app_absences_delete', 'app_projects_index', 'app_projects_new', 'app_projects_show', 'app_projects_edit', 'app_projects_delete', 'app_projects_toggle', 'app_projects_sendback', 'app_grades_index', 'app_grades_new', 'app_grades_show', 'app_grades_edit', 'app_grades_delete', 'app_attendance_sheet', 'app_attendance'];
 
     public function __construct(private RouterInterface $router) {}
 
