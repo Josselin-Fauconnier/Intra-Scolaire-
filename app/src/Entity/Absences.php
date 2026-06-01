@@ -31,24 +31,24 @@ class Absences
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUserId(?User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getDocumentId(): ?Documents
+    public function getDocument(): ?Documents
     {
         return $this->document;
     }
 
-    public function setDocumentId(?Documents $document): static
+    public function setDocument(?Documents $document): static
     {
         $this->document = $document;
 

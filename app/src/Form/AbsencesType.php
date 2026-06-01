@@ -15,37 +15,49 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 class AbsencesType extends AbstractType
 {
+    public function __construct(
+        private UserRepository $userRepository,
+        private DocumentsRepository $documentsRepository,
+    ) {}
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $currentUser = $options['current_user'];
+        $isAdmin     = $currentUser && in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
+        $students    = $this->userRepository->findStudents($isAdmin ? null : $currentUser);
+
+        $allDocs = $this->documentsRepository->findAll();
+        $allowedIds = array_map(fn(User $u) => $u->getId(), $students);
+        $studentDocs = array_values(array_filter(
+            $allDocs,
+            fn(Documents $d) => in_array($d->getUser()->getId(), $allowedIds, true)
+        ));
+
         $builder
             ->add('start_date', DateTimeType::class, [
                 'widget' => 'single_text',
+                'label'  => 'Début',
             ])
             ->add('end_date', DateTimeType::class, [
-                'widget' => 'single_text',
+                'widget'   => 'single_text',
                 'required' => false,
+                'label'    => 'Fin',
             ])
             ->add('user', EntityType::class, [
-                'class' => User::class,
+                'class'        => User::class,
+                'choices'      => $students,
                 'choice_label' => fn(User $u) => $u->getFirstname() . ' ' . $u->getLastname(),
-                'property_path' => 'userId',
-                'query_builder' => fn(UserRepository $er) => $er->createQueryBuilder('u')
-                    ->where('u.roles LIKE :role')
-                    ->setParameter('role', '%ROLE_STUDENT%')
-                    ->orderBy('u.lastname', 'ASC'),
+                'label'        => 'Étudiant',
             ])
             ->add('document', EntityType::class, [
-                'class' => Documents::class,
+                'class'        => Documents::class,
+                'choices'      => $studentDocs,
                 'choice_label' => fn(Documents $d) => $d->getUser()->getFirstname()
                     . ' ' . $d->getUser()->getLastname()
                     . ' — ' . $d->getTitle(),
-                'required' => false,
-                'property_path' => 'documentId',
-                'query_builder' => fn(DocumentsRepository $er) => $er->createQueryBuilder('d')
-                    ->join('d.user', 'u')
-                    ->where('u.roles LIKE :role')
-                    ->setParameter('role', '%ROLE_STUDENT%')
-                    ->orderBy('u.lastname', 'ASC'),
+                'required'    => false,
+                'placeholder' => 'Aucun justificatif',
+                'label'       => 'Justificatif',
             ])
         ;
     }
@@ -53,7 +65,9 @@ class AbsencesType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Absences::class,
+            'data_class'   => Absences::class,
+            'current_user' => null,
         ]);
+        $resolver->setAllowedTypes('current_user', ['null', User::class]);
     }
 }

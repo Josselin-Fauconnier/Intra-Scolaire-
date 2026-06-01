@@ -51,7 +51,7 @@
                    aria-label="Notes"
                    data-turbo-frame="main-frame">
                     <i class="bi bi-clipboard-check"></i>
-                    <span class="sidebar-label">Notes</span>
+                    {{ is_granted('ROLE_TEACHER') ? 'À noter' : 'Notes' }}
                 </a>
             </li>
             <li>
@@ -125,7 +125,7 @@
     </nav>
 
     <main class="main-content">
-        <turbo-frame id="main-frame" src="{{ path('app_promotions_index') }}">
+        <turbo-frame id="main-frame" src="{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_VISITOR') %}{{ path('app_promotions_index') }}{% elseif is_granted('ROLE_TEACHER') %}{{ path('app_absences_index') }}{% else %}{{ path('app_grades_index') }}{% endif %}">
             <div class="loading-placeholder">Chargement...</div>
         </turbo-frame>
     </main>

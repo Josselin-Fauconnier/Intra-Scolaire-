@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
+
 #[Route('/documents')]
 #[IsGranted('ROLE_USER')]
 final class DocumentsController extends AbstractController
@@ -41,9 +42,12 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_documents_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
+            throw $this->createAccessDeniedException("Accès refusé.");
+        }
         $document = new Documents();
         $form = $this->createForm(DocumentsType::class, $document);
         $form->handleRequest($request);
@@ -82,9 +86,12 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_documents_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function edit(Request $request, Documents $document, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
+            throw $this->createAccessDeniedException("Accès refusé.");
+        }
         $form = $this->createForm(DocumentsType::class, $document);
         $form->handleRequest($request);
 
@@ -122,9 +129,12 @@ final class DocumentsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_documents_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function delete(Request $request, Documents $document, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_STUDENT')) {
+            throw $this->createAccessDeniedException("Accès refusé.");
+        }
         if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->getPayload()->getString('_token'))) {
             $path = $this->getParameter('documents_directory') . '/' . $document->getPath();
             if ($document->getPath() && file_exists($path)) {
