@@ -396,3 +396,4 @@ Fichiers modifiés : `src/Form/NotificationsType.php`, `src/Controller/Notificat
 `index()` chargeait toutes les notifications d'un utilisateur sans limite via `findByUser()`. Ajout de KnpPaginator avec une limite de 5 par page et `{{ knp_pagination_render(recipients) }}` dans le template.
 
 Fichiers modifiés : `src/Controller/NotificationsController.php`, `templates/notifications/index.html.twig`
+

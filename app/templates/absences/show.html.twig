@@ -11,24 +11,23 @@
         </a>
     </div>
 
-    <div class="detail-table-wrapper">
-        <table class="table detail-table">
-            <tbody>
-                <tr>
-                    <th>ID</th>
-                    <td>{{ absence.id }}</td>
-                </tr>
-                <tr>
-                    <th>Debut</th>
-                    <td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td>
-                </tr>
-                <tr>
-                    <th>Fin</th>
-                    <td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <table class="table">
+        <tbody>
+            <tr><th>Étudiant</th><td>{{ absence.user.firstname }} {{ absence.user.lastname }}</td></tr>
+            <tr><th>Début</th><td>{{ absence.startDate ? absence.startDate|date('d/m/Y H:i') : '—' }}</td></tr>
+            <tr><th>Fin</th><td>{{ absence.endDate ? absence.endDate|date('d/m/Y H:i') : '—' }}</td></tr>
+            <tr>
+                <th>Justificatif</th>
+                <td>
+                    {% if absence.document %}
+                        <span class="badge bg-success"><i class="bi bi-file-earmark-check"></i> {{ absence.document.title }}</span>
+                    {% else %}
+                        <span class="text-muted">Aucun justificatif</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
     {% if is_granted('ROLE_TEACHER') %}
         <div class="detail-actions">
