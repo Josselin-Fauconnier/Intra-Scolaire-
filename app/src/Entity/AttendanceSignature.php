@@ -2,29 +2,31 @@
 
 namespace App\Entity;
 
+use App\Entity\Promotions;
+use App\Entity\User;
 use App\Enum\AttendanceType;
-use App\Repository\AttendanceRepository;
+use App\Repository\AttendanceSignatureRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AttendanceRepository::class)]
-class Attendance
+#[ORM\Entity(repositoryClass: AttendanceSignatureRepository::class)]
+class AttendanceSignature
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'attendances')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-    #[ORM\ManyToOne(inversedBy: 'attendances')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Promotions $promotion = null;
 
-    #[ORM\Column]
-    private ?\DateTime $date = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(enumType: AttendanceType::class)]
     private ?AttendanceType $status = null;
@@ -32,10 +34,8 @@ class Attendance
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // --- AJOUT POUR LA SIGNATURE ---
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $signedAt = null;
-    // -------------------------------
 
     public function getId(): ?int
     {
@@ -66,12 +66,12 @@ class Attendance
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeInterface $date): static
     {
         $this->date = $date;
 
@@ -95,14 +95,13 @@ class Attendance
         return $this->comment;
     }
 
-    public function setComment(string $comment): static
+    public function setComment(?string $comment): static
     {
         $this->comment = $comment;
 
         return $this;
     }
 
-    // --- AJOUTS POUR LA SIGNATURE ---
     public function getSignedAt(): ?\DateTimeInterface
     {
         return $this->signedAt;
@@ -114,5 +113,4 @@ class Attendance
 
         return $this;
     }
-    // --------------------------------
 }

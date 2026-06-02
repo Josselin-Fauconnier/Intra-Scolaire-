@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Attendance;
 use App\Entity\Promotions;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -68,5 +69,21 @@ class AttendanceRepository extends ServiceEntityRepository
             ->orderBy('a.date', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findOneByStudentAndDate(User $student, \DateTime $date): ?Attendance
+    {
+        $startOfDay = (clone $date)->setTime(0, 0, 0);
+        $endOfDay = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.student = :student')
+            ->andWhere('a.date BETWEEN :start AND :end')
+            ->setParameter('student', $student)
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

@@ -204,6 +204,25 @@ class Promotions
         return $this->attendances;
     }
 
+    /**
+     * Retourne la collection des utilisateurs (étudiants) rattachés à la promotion.
+     *
+     * @return Collection<int, \App\Entity\User>
+     */
+    public function getStudents(): Collection
+    {
+        $students = new ArrayCollection();
+
+        foreach ($this->promotionUsers as $promotionUser) {
+            $user = $promotionUser->getUser();
+            if ($user !== null && !$students->contains($user)) {
+                $students->add($user);
+            }
+        }
+
+        return $students;
+    }
+
     public function addAttendance(Attendance $attendance): static
     {
         if (!$this->attendances->contains($attendance)) {

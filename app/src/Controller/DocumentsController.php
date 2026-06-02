@@ -32,7 +32,7 @@ final class DocumentsController extends AbstractController
 
         if (!$this->isGranted('ROLE_TEACHER')) {
             $qb->where('d.user = :user')
-               ->setParameter('user', $this->getUser());
+                ->setParameter('user', $this->getUser());
         }
 
         $pagination = $paginator->paginate(
@@ -171,7 +171,12 @@ final class DocumentsController extends AbstractController
         if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException();
         }
-        if ($this->isCsrfTokenValid('delete' . $document->getId(), $request->getPayload()->getString('_token'))) {
+        $token = $request->request->get('_token');
+        if (!$token && method_exists($request, 'getPayload')) {
+            $token = $request->getPayload()->getString('_token');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $document->getId(), $token)) {
             $path = $this->getParameter('documents_directory') . '/' . $document->getPath();
             if ($document->getPath() && file_exists($path)) {
                 unlink($path);

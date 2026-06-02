@@ -2,133 +2,301 @@
 
 namespace App\Controller;
 
-use App\Entity\Promotions;
+use App\Entity\Absences;
 use App\Entity\Attendance;
+use App\Entity\AttendanceSignature;
+use App\Entity\Promotions;
+use App\Form\AttendanceSignatureType;
+use App\Repository\AbsencesRepository;
+use App\Repository\AttendanceRepository;
+use App\Repository\AttendanceSignatureRepository;
 use App\Enum\AttendanceType;
 use App\Repository\PromotionsRepository;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\AttendanceRepository;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class AttendanceController extends AbstractController
 {
-    #[Route('/attendance', name: 'app_attendance')]
+    // Liste des promos pour le prof
+    #[Route('/attendance', name: 'app_attendance', methods: ['GET'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function index(PromotionsRepository $promotionsRepository): Response
     {
-        $teacher = $this->getUser();
-
-        if (!$teacher) {
-            throw $this->createAccessDeniedException('You must be logged in to view this page.');
-        }
-
-        $teacherPromotions = $promotionsRepository->findBy(['professor' => $teacher]);
-
         return $this->render('attendance/index.html.twig', [
-            'promotions' => $teacherPromotions,
+            'promotions' => $promotionsRepository->findBy(['professor' => $this->getUser()]),
         ]);
     }
 
-    /* #[Route('/attendance/promo/{id}', name: 'app_attendance_sheet', methods: ['GET', 'POST'])]
-    public function sheet(Promotions $promotion, UserRepository $userRepo, Request $request, EntityManagerInterface $em): Response
-    {
-        $students = $userRepo->findStudents(promotionId: $promotion->getId());
-
-        if ($request->getMethod() === "POST") {
-            $data = $request->getPayload()->all('attendance');
-            foreach ($students as $student) {
-                $status = $data[$student->getId()] ?? 'absent';
-
-                $attendance = new Attendance();
-                $attendance->setStudent($student)
-                    ->setPromotion($promotion)
-                    ->setDate(new \DateTime())
-                    ->setStatus((AttendanceType::tryFrom($status) !== null) ? AttendanceType::tryFrom($status) : AttendanceType::ABSENT);
-
-                $em->persist($attendance);
-            }
-            $em->flush();
-            $this->addFlash('success', 'Appel enregistré !');
-        }
-
-        return $this->render('attendance/sheet.html.twig', [
-            'promotion' => $promotion,
-            'students' => $students
-        ]);
-    } */
-
-
-
+    // Feuille d'appel détaillée
     #[Route('/attendance/promo/{id}', name: 'app_attendance_sheet', methods: ['GET', 'POST'])]
-    public function sheet(
-        Promotions $promotion,
-        UserRepository $userRepo,
-        AttendanceRepository $attendanceRepo,
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
-        $students = $userRepo->findStudents(promotionId: $promotion->getId());
-        $today = new \DateTime('today');
+    #[IsGranted('ROLE_TEACHER')]
+    public function sheet(Promotions $promotion, Request $request, AttendanceRepository $attendanceRepo, AttendanceSignatureRepository $signatureRepo, AbsencesRepository $absencesRepo, EntityManagerInterface $entityManager): Response
+    {
+        // On récupère la date depuis l'URL ou on prend aujourd'hui
+        $dateString = $request->query->get('date');
+        $date = $dateString ? new \DateTime($dateString) : new \DateTime('today');
 
-        $dateParam = $request->query->get('date');
-        $selectedDate = $dateParam ? new \DateTime($dateParam) : $today;
-
-        $isToday = $selectedDate->format('Y-m-d') === $today->format('Y-m-d');
-
-        $existingAttendances = $attendanceRepo->findTodayAttendanceByPromotion($promotion, $selectedDate);
-
-        $attendanceMap = [];
-        foreach ($existingAttendances as $attendance) {
-            $attendanceMap[$attendance->getStudent()->getId()] = $attendance;
-        }
-
-        $allDatesRaw = $attendanceRepo->findDistinctDatesByPromotion($promotion);
+        // Calcul des dates pour le menu déroulant (7 derniers jours)
         $availableDates = [];
-        $availableDates[$today->format('Y-m-d')] = $today;
-
-        foreach ($allDatesRaw as $row) {
-            $d = $row['date'];
+        for ($i = 0; $i < 7; $i++) {
+            $d = (new \DateTime())->modify("-$i days");
             $availableDates[$d->format('Y-m-d')] = $d;
         }
-        krsort($availableDates); // Trier 
 
-        if ($request->getMethod() === "POST" && $isToday) {
-            $data = $request->getPayload()->all('attendance');
+        $students = $promotion->getStudents();
 
-            foreach ($students as $student) {
-                $studentId = $student->getId();
-                $status = $data[$studentId] ?? 'absent';
+        $isToday = $date->format('Y-m-d') === (new \DateTime('today'))->format('Y-m-d');
 
-                if (isset($attendanceMap[$studentId])) {
-                    $attendance = $attendanceMap[$studentId];
-                } else {
-                    $attendance = new Attendance();
-                    $attendance->setStudent($student)
-                        ->setPromotion($promotion)
-                        ->setDate(new \DateTime());
-                }
+        // Récupère les présences existantes pour cette promo et cette date
+        $existingAttendances = $attendanceRepo->findTodayAttendanceByPromotion($promotion, $date);
+        $attendanceMap = [];
+        foreach ($existingAttendances as $att) {
+            $attendanceMap[$att->getStudent()->getId()] = $att;
+        }
 
-                $attendance->setStatus((AttendanceType::tryFrom($status) !== null) ? AttendanceType::tryFrom($status) : AttendanceType::ABSENT);
-                $em->persist($attendance);
+        $pendingSignatures = $signatureRepo->findPendingByPromotionAndDate($promotion, $date);
+
+        // Handle form submission from teacher (save attendance for today)
+        if ($request->isMethod('POST')) {
+            if (!$isToday) {
+                $this->addFlash('warning', "Historique verrouillé, impossible de modifier une date passée.");
+                return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId(), 'date' => $date->format('Y-m-d')]);
             }
 
-            $em->flush();
-            $this->addFlash('success', 'Appel enregistré !');
+            $attendanceData = $request->request->all('attendance', []);
+            if (!is_array($attendanceData)) {
+                $attendanceData = [];
+            }
 
-            return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId()]);
+            $attendanceDate = (clone $date)->setTime(0, 0, 0);
+            $now = new \DateTime();
+
+            foreach ($students as $student) {
+                $sid = $student->getId();
+                $statusStr = $attendanceData[$sid] ?? null;
+                if ($statusStr === null) {
+                    continue;
+                }
+
+                try {
+                    $statusEnum = AttendanceType::from($statusStr);
+                } catch (\ValueError $e) {
+                    $statusEnum = AttendanceType::PRESENT;
+                }
+
+                $existingAbsence = $absencesRepo->findOneByStudentAndDate($student, $attendanceDate);
+
+                if (isset($attendanceMap[$sid])) {
+                    $att = $attendanceMap[$sid];
+                    $att->setStatus($statusEnum);
+                    $att->setSignedAt($now);
+                } else {
+                    $att = new Attendance();
+                    $att->setStudent($student);
+                    $att->setPromotion($promotion);
+                    $att->setDate($attendanceDate);
+                    $att->setStatus($statusEnum);
+                    $att->setSignedAt($now);
+                    $entityManager->persist($att);
+                }
+
+                if ($statusEnum === AttendanceType::ABSENT) {
+                    if (!$existingAbsence) {
+                        $absence = new Absences();
+                        $absence->setUser($student);
+                        $absence->setStartDate($now);
+                        $absence->setEndDate(null);
+                        $entityManager->persist($absence);
+                    }
+                } elseif ($existingAbsence) {
+                    $entityManager->remove($existingAbsence);
+                }
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Présences enregistrées.');
+            return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId(), 'date' => $date->format('Y-m-d')]);
         }
 
         return $this->render('attendance/sheet.html.twig', [
             'promotion' => $promotion,
             'students' => $students,
-            'attendanceMap' => $attendanceMap,
-            'date' => $selectedDate,
+            'date' => $date,
+            'isToday' => $isToday,
             'availableDates' => $availableDates,
-            'isToday' => $isToday
+            'attendanceMap' => $attendanceMap,
+            'pendingSignatures' => $pendingSignatures,
+        ]);
+    }
+
+    #[Route('/attendance/signature/{id}/validate', name: 'app_attendance_signature_validate', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
+    public function validateSignature(AttendanceSignature $pendingSignature, Request $request, AttendanceRepository $attendanceRepo, AbsencesRepository $absencesRepo, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('validate_signature' . $pendingSignature->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_attendance_sheet', ['id' => $pendingSignature->getPromotion()->getId(), 'date' => $pendingSignature->getDate()->format('Y-m-d')]);
+        }
+
+        $status = $request->request->get('status');
+        if (!in_array($status, ['present', 'late', 'absent'], true)) {
+            $this->addFlash('danger', 'Statut invalide pour la validation.');
+            return $this->redirectToRoute('app_attendance_sheet', ['id' => $pendingSignature->getPromotion()->getId(), 'date' => $pendingSignature->getDate()->format('Y-m-d')]);
+        }
+
+        $student = $pendingSignature->getStudent();
+        $date = $pendingSignature->getDate();
+        $promotion = $pendingSignature->getPromotion();
+
+        $statusEnum = AttendanceType::from($status);
+        $attendanceDate = new \DateTime($date->format('Y-m-d'));
+        $now = new \DateTime();
+
+        $existingAttendance = $attendanceRepo->findOneByStudentAndDate($student, $attendanceDate);
+        if ($existingAttendance) {
+            $existingAttendance->setStatus($statusEnum);
+            $existingAttendance->setComment($pendingSignature->getComment());
+            $existingAttendance->setSignedAt($now);
+        } else {
+            $existingAttendance = new Attendance();
+            $existingAttendance->setStudent($student);
+            $existingAttendance->setPromotion($promotion);
+            $existingAttendance->setDate($attendanceDate);
+            $existingAttendance->setStatus($statusEnum);
+            $existingAttendance->setComment($pendingSignature->getComment());
+            $existingAttendance->setSignedAt($now);
+            $entityManager->persist($existingAttendance);
+        }
+
+        $existingAbsence = $absencesRepo->findOneByStudentAndDate($student, $attendanceDate);
+        if ($statusEnum === AttendanceType::ABSENT) {
+            if (!$existingAbsence) {
+                $absence = new Absences();
+                $absence->setUser($student);
+                $absence->setStartDate($now);
+                $absence->setEndDate(null);
+                $entityManager->persist($absence);
+            }
+        } elseif ($existingAbsence) {
+            $entityManager->remove($existingAbsence);
+        }
+
+        $entityManager->remove($pendingSignature);
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('Demande de %s validée.', $status === 'present' ? 'présence' : 'absence'));
+
+        return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId(), 'date' => $date->format('Y-m-d')]);
+    }
+
+    // Signature pour les étudiants
+    #[Route('/attendance/signer', name: 'app_attendance_sign', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function sign(Request $request, AttendanceRepository $attendanceRepo, AttendanceSignatureRepository $signatureRepo, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isGranted('ROLE_TEACHER') || $this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException("Cette page est réservée aux étudiants.");
+        }
+
+        $user = $this->getUser();
+        $attendance = $attendanceRepo->findOneByStudentAndDate($user, new \DateTime('today'));
+        $pendingSignature = $signatureRepo->findOneByStudentAndDate($user, new \DateTime('today'));
+
+        $isFinalStatus = $attendance && !in_array($attendance->getStatus(), [AttendanceType::PENDING_PRESENT, AttendanceType::PENDING_ABSENT, AttendanceType::PENDING_LATE], true);
+        if ($isFinalStatus) {
+            return $this->render('attendance/signature.html.twig', [
+                'form' => null,
+                'infoMessage' => 'Votre présence a déjà été validée par le professeur.',
+                'attendance' => $attendance,
+            ]);
+        }
+
+        if (!$pendingSignature) {
+            $pendingSignature = new AttendanceSignature();
+            $pendingSignature->setDate((new \DateTime('today'))->setTime(0, 0, 0));
+
+            $promotion = null;
+            foreach ($user->getPromotionUsers() as $promotionUser) {
+                if ($promotionUser->getPromotion()) {
+                    $promotion = $promotionUser->getPromotion();
+                    break;
+                }
+            }
+
+            if (!$promotion) {
+                return $this->render('attendance/signature.html.twig', [
+                    'form' => null,
+                    'errorMessage' => 'Vous n\'êtes rattaché(e) à aucune promotion. Contactez un professeur.',
+                ]);
+            }
+
+            $pendingSignature->setPromotion($promotion);
+            $pendingSignature->setStudent($user);
+        }
+
+        $form = $this->createForm(AttendanceSignatureType::class, $pendingSignature);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            // Debug logs to trace submission issues
+            try {
+                $this->container->get('logger')->info('Attendance sign submitted', ['request' => $request->request->all()]);
+            } catch (\Throwable $e) {
+                // ignore logging failure
+            }
+            if ($form->isValid()) {
+                // Récupère le statut envoyé (champ non mappé) et le convertit en enum
+                $statusRaw = $form->get('status')->getData();
+                try {
+                    $this->container->get('logger')->info('Attendance sign statusRaw', ['statusRaw' => $statusRaw]);
+                } catch (\Throwable $e) {
+                }
+                try {
+                    $pendingSignature->setStatus(AttendanceType::from($statusRaw));
+                } catch (\ValueError $e) {
+                    // ignore invalid status and set default
+                    $pendingSignature->setStatus(AttendanceType::PENDING_PRESENT);
+                }
+
+                $pendingSignature->setSignedAt(new \DateTime());
+                try {
+                    $entityManager->persist($pendingSignature);
+                    $entityManager->flush();
+                    try {
+                        $this->container->get('logger')->info('Attendance sign persisted', ['id' => $pendingSignature->getId()]);
+                    } catch (\Throwable $e) {
+                    }
+
+                    $this->addFlash('success', 'Votre demande de présence est envoyée et en attente de validation du professeur.');
+                    return $this->redirectToRoute('app_dashboard');
+                } catch (\Throwable $e) {
+                    $this->addFlash('danger', 'Erreur lors de l\'enregistrement : ' . $e->getMessage());
+                    // Log the exception to the profiler/logs
+                    try {
+                        $this->container->get('logger')->error('Attendance sign persist error', ['exception' => $e]);
+                    } catch (\Throwable $ex) {
+                    }
+                }
+            } else {
+                $messages = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $messages[] = $error->getMessage();
+                }
+                $this->addFlash('danger', 'Le formulaire contient des erreurs : ' . implode(' ; ', $messages));
+                try {
+                    $this->container->get('logger')->warning('Attendance sign form invalid', ['errors' => $messages]);
+                } catch (\Throwable $e) {
+                }
+            }
+        }
+
+        return $this->render('attendance/signature.html.twig', [
+            'form' => $form,
+            'attendance' => $pendingSignature,
         ]);
     }
 }

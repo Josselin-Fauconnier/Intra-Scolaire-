@@ -15,7 +15,7 @@ class Documents
     private ?int $id = null;
 
     // Renommé en $user (au lieu de $user_id) et User avec une majuscule
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

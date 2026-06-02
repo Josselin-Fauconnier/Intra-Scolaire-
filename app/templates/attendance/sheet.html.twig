@@ -18,6 +18,64 @@
         </form>
     </div>
 
+    <div class="mb-4">
+        <h3>Signatures en attente</h3>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Demande</th>
+                        <th>Heure</th>
+                        <th>Commentaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pendingSignatures is empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucune signature en attente pour cette date.</td>
+                        </tr>
+                    {% else %}
+                        {% for signature in pendingSignatures %}
+                            <tr>
+                                <td>{{ signature.student.firstname|capitalize }} {{ signature.student.lastname|upper }}</td>
+                                <td>
+                                    {% if signature.status.value == 'pending_present' %}
+                                        Présent demandé
+                                    {% elseif signature.status.value == 'pending_late' %}
+                                        Retard demandé
+                                    {% else %}
+                                        Absent demandé
+                                    {% endif %}
+                                </td>
+                                <td>{{ signature.signedAt ? signature.signedAt|date('d/m/Y H:i') : '-' }}</td>
+                                <td>{{ signature.comment ?: '-' }}</td>
+                                <td>
+                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                        <input type="hidden" name="status" value="present">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-success me-1">Présent</button>
+                                    </form>
+                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                        <input type="hidden" name="status" value="late">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-warning me-1">Retard</button>
+                                    </form>
+                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                        <input type="hidden" name="status" value="absent">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Absent</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     {# Formulaire principal de l'appel #}
     <form action="{{ path('app_attendance_sheet', {id: promotion.id}) }}" method="post">
         <table class="table">
@@ -33,24 +91,39 @@
                 {% for student in students %}
                     {% set existingAttendance = attendanceMap[student.id] ?? null %}
                     {% set currentStatus = existingAttendance ? existingAttendance.status.value : 'present' %}
+                    {% set radioStatus = currentStatus %}
+                    {% if currentStatus == 'pending_present' %}
+                        {% set radioStatus = 'present' %}
+                    {% elseif currentStatus == 'pending_absent' %}
+                        {% set radioStatus = 'absent' %}
+                    {% elseif currentStatus == 'pending_late' %}
+                        {% set radioStatus = 'late' %}
+                    {% endif %}
                     
                     <tr>
-                        <td>{{ student.firstname|capitalize }} {{ student.lastname|upper }}</td>
+                        <td>
+                            {{ student.firstname|capitalize }} {{ student.lastname|upper }}
+                            {% if existingAttendance and existingAttendance.status.value == 'pending_present' %}
+                                <span class="badge bg-warning text-dark ms-2">Demande élève : présent</span>                            {% elseif existingAttendance and existingAttendance.status.value == 'pending_late' %}
+                                <span class="badge bg-warning text-dark ms-2">Demande élève : retard</span>                            {% elseif existingAttendance and existingAttendance.status.value == 'pending_absent' %}
+                                <span class="badge bg-warning text-dark ms-2">Demande élève : absent</span>
+                            {% endif %}
+                        </td>
                         
                         {# On ajoute l'attribut 'disabled' si ce n'est pas aujourd'hui (not isToday) #}
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="present" 
-                                   {{ currentStatus == 'present' ? 'checked' : '' }}
+                                   {{ radioStatus == 'present' ? 'checked' : '' }}
                                    {{ not isToday ? 'disabled' : '' }}>
                         </td>
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="late" 
-                                   {{ currentStatus == 'late' ? 'checked' : '' }}
+                                   {{ radioStatus == 'late' ? 'checked' : '' }}
                                    {{ not isToday ? 'disabled' : '' }}>
                         </td>
                         <td>
                             <input type="radio" name="attendance[{{ student.id }}]" value="absent" 
-                                   {{ currentStatus == 'absent' ? 'checked' : '' }}
+                                   {{ radioStatus == 'absent' ? 'checked' : '' }}
                                    {{ not isToday ? 'disabled' : '' }}>
                         </td>
                     </tr>

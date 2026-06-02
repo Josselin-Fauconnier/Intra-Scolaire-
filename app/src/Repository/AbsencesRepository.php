@@ -54,4 +54,20 @@ class AbsencesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findOneByStudentAndDate(User $student, \DateTime $date): ?Absences
+    {
+        $startOfDay = (clone $date)->setTime(0, 0, 0);
+        $endOfDay = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.user = :student')
+            ->andWhere('a.start_date BETWEEN :start AND :end')
+            ->setParameter('student', $student)
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
