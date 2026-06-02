@@ -100,6 +100,14 @@ final class NotificationsController extends AbstractController
                 $entityManager->persist($recipient);
             }
 
+            if (!in_array($currentUser, $recipients, true)) {
+                $senderEntry = new NotificationRecipients();
+                $senderEntry->setNotificationId($notification);
+                $senderEntry->setUserId($currentUser);
+                $senderEntry->setIsRead(true);
+                $entityManager->persist($senderEntry);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_notifications_index', [], Response::HTTP_SEE_OTHER);
