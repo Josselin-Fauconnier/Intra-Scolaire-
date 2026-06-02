@@ -93,6 +93,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserActions::class, mappedBy: 'user')]
     private Collection $userActions;
 
+    /**
+     * @var Collection<int, Attendance>
+     */
+    #[ORM\OneToMany(targetEntity: Attendance::class, mappedBy: 'student')]
+    private Collection $attendances;
+
     public function __construct()
     {
         $this->promotions = new ArrayCollection();
@@ -102,6 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->grades = new ArrayCollection();
         $this->notificationRecipients = new ArrayCollection();
         $this->userActions = new ArrayCollection();
+        $this->attendances = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -448,6 +455,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($userAction->getUserId() === $this) {
                 $userAction->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Attendance>
+     */
+    public function getAttendances(): Collection
+    {
+        return $this->attendances;
+    }
+
+    public function addAttendance(Attendance $attendance): static
+    {
+        if (!$this->attendances->contains($attendance)) {
+            $this->attendances->add($attendance);
+            $attendance->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttendance(Attendance $attendance): static
+    {
+        if ($this->attendances->removeElement($attendance)) {
+            // set the owning side to null (unless already changed)
+            if ($attendance->getStudent() === $this) {
+                $attendance->setStudent(null);
             }
         }
 
