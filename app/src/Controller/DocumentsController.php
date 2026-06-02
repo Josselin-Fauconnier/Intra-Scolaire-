@@ -30,9 +30,9 @@ final class DocumentsController extends AbstractController
         $qb = $documentsRepository->createQueryBuilder('d')
             ->orderBy('d.id', 'DESC');
 
-        if (!$this->isGranted('ROLE_TEACHER')) {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
             $qb->where('d.user = :user')
-               ->setParameter('user', $this->getUser());
+                ->setParameter('user', $this->getUser());
         }
 
         $pagination = $paginator->paginate(
@@ -160,7 +160,7 @@ final class DocumentsController extends AbstractController
     #[Route('/{id}', name: 'app_documents_show', methods: ['GET'])]
     public function show(Documents $document): Response
     {
-        if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException();
         }
 
