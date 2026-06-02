@@ -79,6 +79,10 @@ final class DocumentsController extends AbstractController
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de l'upload du fichier.");
+                    return $this->render('documents/new.html.twig', [
+                        'document' => $document,
+                        'form' => $form,
+                    ], new Response(null, 422));
                 }
             }
 
@@ -136,6 +140,10 @@ final class DocumentsController extends AbstractController
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de la modification.");
+                    return $this->render('documents/edit.html.twig', [
+                        'document' => $document,
+                        'form' => $form,
+                    ], new Response(null, 422));
                 }
             }
 
