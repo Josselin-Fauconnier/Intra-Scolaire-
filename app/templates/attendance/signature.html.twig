@@ -23,7 +23,7 @@
         {{ form_start(form, {'action': path('app_attendance_sign'), 'attr': {'novalidate': 'novalidate', 'class': 'dashboard-form', 'data-turbo': 'false'}}) }}
             <div class="dashboard-form-shell dashboard-form-shell-compact">
                 <div class="dashboard-form-intro">
-                    <span class="pill bg-primary">Signature</span>
+                    <span class="pill">Signature</span>
                     <p class="dashboard-note">Choisissez votre présence ou votre absence, puis envoyez votre demande au professeur.</p>
                 </div>
 
@@ -34,8 +34,23 @@
                 {% endif %}
 
                 <div class="dashboard-form-fields">
-                    {{ form_row(form.status) }}
-                    {{ form_row(form.comment) }}
+                    <div>
+                        {{ form_label(form.status) }}
+                        <div class="dashboard-form-status">
+                            {% for choice in form.status %}
+                                <div class="form-check">
+                                    {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                            {% endfor %}
+                            {{ form_errors(form.status) }}
+                        </div>
+                    </div>
+                    <div>
+                        {{ form_label(form.comment) }}
+                        {{ form_widget(form.comment, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                        {{ form_errors(form.comment) }}
+                    </div>
                 </div>
 
                 <div class="dashboard-form-actions mt-3">
@@ -47,9 +62,5 @@
             </div>
         {{ form_end(form) }}
     {% endif %}
-
-    <div class="mt-3">
-        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">Retour au tableau de bord</a>
-    </div>
 </turbo-frame>
 {% endblock %}
