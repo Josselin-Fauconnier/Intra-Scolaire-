@@ -21,22 +21,25 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminController extends AbstractController
 {
     #[Route('/users', name: 'app_admin_users', methods: ['GET'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function users(
         UserRepository $userRepository,
         PromotionsRepository $promotionsRepository,
         PaginatorInterface $paginator,
         Request $request
     ): Response {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
+            throw $this->createAccessDeniedException("Vous n'avez pas accès à cette page.");
+        }
         $currentUser = $this->getUser();
-        $isAdmin     = $this->isGranted('ROLE_ADMIN');
+        $isAdmin     = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR');
 
         $search      = trim($request->query->getString('search', ''));
         $promoParam  = $request->query->get('promotion', '');
         $promotionId = ($promoParam !== '' && ctype_digit($promoParam)) ? (int) $promoParam : null;
 
-        $teacher = $isAdmin ? null : $currentUser; 
-        $data     = $userRepository->findStudents($teacher, $search, $promotionId); 
+        $teacher = $isAdmin ? null : $currentUser;
+        $data     = $userRepository->findStudents($teacher, $search, $promotionId);
         $students = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         $promotions = $isAdmin
