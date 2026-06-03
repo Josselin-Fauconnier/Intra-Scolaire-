@@ -33,8 +33,10 @@
                         <span class="badge bg-danger">Admin</span>
                     {% elseif 'ROLE_TEACHER' in member.roles %}
                         <span class="badge bg-primary">Professeur</span>
+                    {% elseif 'ROLE_VISITOR' in member.roles %}
+                        <span class="badge bg-success">Visiteur</span>
                     {% else %}
-                        <span class="badge bg-secondary">Utilisateur</span>
+                        <span class="badge bg-secondary">Etudiant</span>
                     {% endif %}
 
                     <form method="post"
@@ -46,6 +48,7 @@
                             <option value="ROLE_TEACHER" {% if 'ROLE_TEACHER' in member.roles %}selected{% endif %}>Professeur</option>
                             <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in member.roles %}selected{% endif %}>Admin</option>
                             <option value="ROLE_STUDENT" {% if 'ROLE_STUDENT' in member.roles %}selected{% endif %}>Etudiant</option>
+                            <option value="ROLE_VISITOR" {% if 'ROLE_VISITOR' in member.roles %}selected{% endif %}>Visiteur</option>
                         </select>
                         <button type="submit" class="btn btn-outline-primary btn-sm">Mettre a jour</button>
                     </form>

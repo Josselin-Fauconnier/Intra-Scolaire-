@@ -37,6 +37,7 @@ class PromotionsType extends AbstractType
                 'choice_label' => 'title',
                 'multiple' => true,
                 'by_reference' => false,
+                'required' => false,
             ])
         ;
     }

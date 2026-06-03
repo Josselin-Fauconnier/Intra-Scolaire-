@@ -30,7 +30,7 @@ final class DocumentsController extends AbstractController
         $qb = $documentsRepository->createQueryBuilder('d')
             ->orderBy('d.id', 'DESC');
 
-        if (!$this->isGranted('ROLE_TEACHER')) {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
             $qb->where('d.user = :user')
                 ->setParameter('user', $this->getUser());
         }
@@ -79,6 +79,10 @@ final class DocumentsController extends AbstractController
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de l'upload du fichier.");
+                    return $this->render('documents/new.html.twig', [
+                        'document' => $document,
+                        'form' => $form,
+                    ], new Response(null, 422));
                 }
             }
 
@@ -136,6 +140,10 @@ final class DocumentsController extends AbstractController
                     $document->setPath($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', "Erreur lors de la modification.");
+                    return $this->render('documents/edit.html.twig', [
+                        'document' => $document,
+                        'form' => $form,
+                    ], new Response(null, 422));
                 }
             }
 
@@ -152,7 +160,7 @@ final class DocumentsController extends AbstractController
     #[Route('/{id}', name: 'app_documents_show', methods: ['GET'])]
     public function show(Documents $document): Response
     {
-        if (!$this->isGranted('ROLE_TEACHER') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR') && $document->getUser()?->getId() !== $this->getUser()->getId()) {
             throw $this->createAccessDeniedException();
         }
 

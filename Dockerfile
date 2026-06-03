@@ -8,3 +8,6 @@ RUN curl -sS https://getcomposer.org/installer | php \
 
 
 WORKDIR /var/www/html
+
+RUN mkdir -p /var/www/html/public/uploads/documents \
+    && chown -R www-data:www-data /var/www/html/public/uploads

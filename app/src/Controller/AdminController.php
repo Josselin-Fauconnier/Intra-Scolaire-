@@ -21,22 +21,25 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminController extends AbstractController
 {
     #[Route('/users', name: 'app_admin_users', methods: ['GET'])]
-    #[IsGranted('ROLE_TEACHER')]
+
     public function users(
         UserRepository $userRepository,
         PromotionsRepository $promotionsRepository,
         PaginatorInterface $paginator,
         Request $request
     ): Response {
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
+            throw $this->createAccessDeniedException("Vous n'avez pas accès à cette page.");
+        }
         $currentUser = $this->getUser();
-        $isAdmin     = $this->isGranted('ROLE_ADMIN');
+        $isAdmin     = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_VISITOR');
 
         $search      = trim($request->query->getString('search', ''));
         $promoParam  = $request->query->get('promotion', '');
         $promotionId = ($promoParam !== '' && ctype_digit($promoParam)) ? (int) $promoParam : null;
 
-        $teacher = $isAdmin ? null : $currentUser; 
-        $data     = $userRepository->findStudents($teacher, $search, $promotionId); 
+        $teacher = $isAdmin ? null : $currentUser;
+        $data     = $userRepository->findStudents($teacher, $search, $promotionId);
         $students = $paginator->paginate($data, $request->query->getInt('page', 1), 20);
 
         $promotions = $isAdmin
@@ -52,10 +55,17 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}', name: 'app_students_show', methods: ['GET'])]
-    #[IsGranted('ROLE_TEACHER')]
+    // On a retiré l'attribut #[IsGranted('ROLE_TEACHER')]
     public function show(User $user, PromotionsRepository $promotionsRepository, UserRepository $userRepository): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN')) {
+        // 1. Contrôle d'accès à l'entrée : seuls les profs et les visiteurs passent
+        if (!$this->isGranted('ROLE_TEACHER') && !$this->isGranted('ROLE_VISITOR')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // 2. Si l'utilisateur n'est NI admin NI visiteur (donc si c'est un prof), 
+        // on applique la restriction sur ses étudiants
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VISITOR')) {
             $allowed = $userRepository->findStudents($this->getUser());
             $allowedIds = array_map(fn(User $u) => $u->getId(), $allowed);
 
@@ -78,7 +88,7 @@ final class AdminController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $allowedRoles = ['ROLE_STUDENT', 'ROLE_TEACHER', 'ROLE_ADMIN'];
+        $allowedRoles = ['ROLE_STUDENT', 'ROLE_TEACHER', 'ROLE_ADMIN', 'ROLE_VISITOR'];
         $role = $request->getPayload()->getString('role');
 
         if (!in_array($role, $allowedRoles, true)) {

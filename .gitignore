@@ -4,6 +4,7 @@ app/var/
 app/.env.local
 app/.env.*.local
 app/public/bundles/
+app/public/uploads/
 
 # Composer
 app/composer.lock
