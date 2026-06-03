@@ -87,14 +87,21 @@
             {% endif %}
 
             {% if is_granted('ROLE_TEACHER') %}
-            <li>
-                <a href="{{ path('app_attendance') }}"
-                   class="sidebar-link"
-                   data-turbo-frame="main-frame">
-                    <i class="bi bi-people-fill"></i> Emargement
-                </a>
-            </li>
-            {% endif %}
+    <li>
+        <a href="{{ path('app_attendance') }}" class="sidebar-link" data-turbo-frame="main-frame">
+            <i class="bi bi-people-fill"></i> Emargement
+        </a>
+    </li>
+    {% endif %}
+
+    {% if not is_granted('ROLE_ADMIN') and not is_granted('ROLE_TEACHER') and not is_granted('ROLE_VISITOR') %}
+    <li>
+        <a href="{{ path('app_attendance_sign') }}" class="sidebar-link" data-turbo-frame="main-frame">
+            <i class="bi bi-pen"></i> Signer ma présence
+        </a>
+    </li>
+    {% endif %}
+            
         </ul>
 
         <div class="sidebar-footer">

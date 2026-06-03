@@ -72,6 +72,19 @@
                     <span class="sidebar-label">Projets</span>
                 </a>
             </li>
+
+            {% if not is_granted('ROLE_ADMIN') and not is_granted('ROLE_TEACHER') and not is_granted('ROLE_VISITOR') %}
+            <li>
+                <a href="{{ path('app_attendance_sign') }}"
+                   class="sidebar-link"
+                   aria-label="Signer ma présence"
+                   data-turbo-frame="main-frame">
+                    <i class="bi bi-pen"></i>
+                    <span class="sidebar-label">Signer ma présence</span>
+                </a>
+            </li>
+            {% endif %}
+
             <li>
                 <a href="{{ path('app_notifications_index') }}"
                    class="sidebar-link"
