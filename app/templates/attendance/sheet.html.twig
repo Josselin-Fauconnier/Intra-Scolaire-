@@ -86,68 +86,101 @@
         </div>
     </div>
 
-    {# Formulaire principal de l'appel #}
+    {# Formulaire principal / Tableau de lecture de l'historique #}
     <form action="{{ path('app_attendance_sheet', {id: promotion.id}) }}" method="post">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Étudiant</th>
-                    <th>Présent</th>
-                    <th>En retard</th>
-                    <th>Absent</th>
-                </tr>
-            </thead>        
-            <tbody>
-                {% for student in students %}
-                    {% set existingAttendance = attendanceMap[student.id] ?? null %}
-                    {% set currentStatus = existingAttendance ? existingAttendance.status.value : 'present' %}
-                    {% set radioStatus = currentStatus %}
-                    {% if currentStatus == 'pending_present' %}
-                        {% set radioStatus = 'present' %}
-                    {% elseif currentStatus == 'pending_absent' %}
-                        {% set radioStatus = 'absent' %}
-                    {% elseif currentStatus == 'pending_late' %}
-                        {% set radioStatus = 'late' %}
-                    {% endif %}
-                    
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead>
                     <tr>
-                        <td>
-                            {{ student.firstname|capitalize }} {{ student.lastname|upper }}
-                            {% if existingAttendance and existingAttendance.status.value == 'pending_present' %}
-                                <span class="badge bg-warning text-dark ms-2">Demande élève : présent</span>                            {% elseif existingAttendance and existingAttendance.status.value == 'pending_late' %}
-                                <span class="badge bg-warning text-dark ms-2">Demande élève : retard</span>                            {% elseif existingAttendance and existingAttendance.status.value == 'pending_absent' %}
-                                <span class="badge bg-warning text-dark ms-2">Demande élève : absent</span>
-                            {% endif %}
-                        </td>
-                        
-                        {# On ajoute l'attribut 'disabled' si ce n'est pas aujourd'hui (not isToday) #}
-                        <td>
-                            <input type="radio" name="attendance[{{ student.id }}]" value="present" 
-                                   {{ radioStatus == 'present' ? 'checked' : '' }}
-                                   {{ not isToday ? 'disabled' : '' }}>
-                        </td>
-                        <td>
-                            <input type="radio" name="attendance[{{ student.id }}]" value="late" 
-                                   {{ radioStatus == 'late' ? 'checked' : '' }}
-                                   {{ not isToday ? 'disabled' : '' }}>
-                        </td>
-                        <td>
-                            <input type="radio" name="attendance[{{ student.id }}]" value="absent" 
-                                   {{ radioStatus == 'absent' ? 'checked' : '' }}
-                                   {{ not isToday ? 'disabled' : '' }}>
-                        </td>
+                        <th>Étudiant</th>
+                        {% if isToday %}
+                            <th>Présent</th>
+                            <th>En retard</th>
+                            <th>Absent</th>
+                        {% else %}
+                            <th>Statut Validé</th>
+                            <th>Heure d'émargement</th>
+                            <th>Commentaire / Motif</th>
+                        {% endif %}
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>        
+                <tbody>
+                    {% for student in students %}
+                        {% set existingAttendance = attendanceMap[student.id] ?? null %}
+                        {% set currentStatus = existingAttendance ? existingAttendance.status.value : 'present' %}
+                        {% set radioStatus = currentStatus %}
+                        {% if currentStatus == 'pending_present' %}
+                            {% set radioStatus = 'present' %}
+                        {% elseif currentStatus == 'pending_absent' %}
+                            {% set radioStatus = 'absent' %}
+                        {% elseif currentStatus == 'pending_late' %}
+                            {% set radioStatus = 'late' %}
+                        {% endif %}
+                        
+                        <tr>
+                            <td>
+                                <strong>{{ student.firstname|capitalize }} {{ student.lastname|upper }}</strong>
+                                {% if isToday and existingAttendance %}
+                                    {% if existingAttendance.status.value == 'pending_present' %}
+                                        <span class="badge bg-warning text-dark ms-2">Demande élève : présent</span>                  
+                                    {% elseif existingAttendance.status.value == 'pending_late' %}
+                                        <span class="badge bg-warning text-dark ms-2">Demande élève : retard</span>                            
+                                    {% elseif existingAttendance.status.value == 'pending_absent' %}
+                                        <span class="badge bg-warning text-dark ms-2">Demande élève : absent</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                     
+                            {% if isToday %}
+                                {# Mode d'appel actif (Aujourd'hui) #}
+                                <td>
+                                    <input type="radio" name="attendance[{{ student.id }}]" value="present" 
+                                           {{ radioStatus == 'present' ? 'checked' : '' }}>
+                                </td>
+                                <td>
+                                    <input type="radio" name="attendance[{{ student.id }}]" value="late" 
+                                           {{ radioStatus == 'late' ? 'checked' : '' }}>
+                                </td>
+                                <td>
+                                    <input type="radio" name="attendance[{{ student.id }}]" value="absent" 
+                                           {{ radioStatus == 'absent' ? 'checked' : '' }}>
+                                </td>
+                            {% else %}
+                                {# Mode consultation historique (Jours précédents) #}
+                                <td>
+                                    {% if existingAttendance %}
+                                        {% if existingAttendance.status.value == 'present' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Présent</span>
+                                        {% elseif existingAttendance.status.value == 'late' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock-fill"></i> En retard</span>
+                                        {% elseif existingAttendance.status.value == 'absent' %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Absent</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ existingAttendance.status.value }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-light text-muted">Non marqué</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ (existingAttendance and existingAttendance.signedAt) ? existingAttendance.signedAt|date('d/m/Y H:i') : '-' }}
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ (existingAttendance and existingAttendance.comment) ? existingAttendance.comment : '-' }}</span>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         
         <div class="mt-3">
-            {# On affiche le bouton de validation UNIQUEMENT si c'est aujourd'hui #}
             {% if isToday %}
                 <button type="submit" class="btn btn-primary">Valider l'appel</button>
             {% else %}
                 <div class="alert alert-info d-inline-block py-2 px-3 mb-0 me-2">
-                    <i class="bi bi-lock"></i> Consultation (Historique verrouillé)
+                    <i class="bi bi-lock-fill"></i> Consultation (Historique verrouillé)
                 </div>
             {% endif %}
             <a href="{{ path('app_attendance') }}" class="btn btn-secondary">Retour</a>
