@@ -92,9 +92,6 @@ final class ProjectsController extends AbstractController
                 return $projectPromotions->contains($promo);
             })->first();
 
-            dump($userPromotions->toArray());
-            dump($projectPromotions->toArray());
-
             if ($matchingPromotion) {
                 $grade = new Grades();
                 $grade->setProject($project);
