@@ -23,6 +23,7 @@ class ProjectsType extends AbstractType
                 'class' => Promotions::class,
                 'choice_label' => 'id',
                 'multiple' => true,
+                'required' => false,
             ])
         ;
     }
