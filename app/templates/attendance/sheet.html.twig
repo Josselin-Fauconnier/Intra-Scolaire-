@@ -19,7 +19,17 @@
     </div>
 
     <div class="mb-4">
-        <h3>Signatures en attente</h3>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Signatures en attente</h3>
+            {% if isToday %}
+                <form action="{{ path('app_attendance_signatures_reset', {id: promotion.id}) }}" method="post" class="d-inline-block">
+                    <input type="hidden" name="_token" value="{{ csrf_token('reset_signatures' ~ promotion.id) }}">
+                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir réinitialiser les signatures ? Les étudiants pourront de nouveau signer leur présence.');">
+                        <i class="bi bi-arrow-clockwise"></i> Réinitialiser les signatures
+                    </button>
+                </form>
+            {% endif %}
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>

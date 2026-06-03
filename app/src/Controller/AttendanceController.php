@@ -206,16 +206,18 @@ final class AttendanceController extends AbstractController
         $attendance = $attendanceRepo->findOneByStudentAndDate($user, new \DateTime('today'));
         $pendingSignature = $signatureRepo->findOneByStudentAndDate($user, new \DateTime('today'));
 
-        $isFinalStatus = $attendance && !in_array($attendance->getStatus(), [AttendanceType::PENDING_PRESENT, AttendanceType::PENDING_ABSENT, AttendanceType::PENDING_LATE], true);
-        if ($isFinalStatus) {
-            return $this->render('attendance/signature.html.twig', [
-                'form' => null,
-                'infoMessage' => 'Votre présence a déjà été validée par le professeur.',
-                'attendance' => $attendance,
-            ]);
-        }
-
+        // Si pas de signature en attente mais statut final validé, afficher le message
         if (!$pendingSignature) {
+            $isFinalStatus = $attendance && !in_array($attendance->getStatus(), [AttendanceType::PENDING_PRESENT, AttendanceType::PENDING_ABSENT, AttendanceType::PENDING_LATE], true);
+            if ($isFinalStatus) {
+                return $this->render('attendance/signature.html.twig', [
+                    'form' => null,
+                    'infoMessage' => 'Votre présence a déjà été validée par le professeur.',
+                    'attendance' => $attendance,
+                ]);
+            }
+
+            // Créer une nouvelle signature
             $pendingSignature = new AttendanceSignature();
             $pendingSignature->setDate((new \DateTime('today'))->setTime(0, 0, 0));
 
@@ -298,5 +300,36 @@ final class AttendanceController extends AbstractController
             'form' => $form,
             'attendance' => $pendingSignature,
         ]);
+    }
+
+    #[Route('/attendance/signatures/{id}/reset', name: 'app_attendance_signatures_reset', methods: ['POST'])]
+    #[IsGranted('ROLE_TEACHER')]
+    public function resetSignatures(Promotions $promotion, Request $request, AttendanceRepository $attendanceRepo, AttendanceSignatureRepository $signatureRepo, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('reset_signatures' . $promotion->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId(), 'date' => (new \DateTime('today'))->format('Y-m-d')]);
+        }
+
+        $date = new \DateTime('today');
+        $dateStart = (clone $date)->setTime(0, 0, 0);
+        $dateEnd = (clone $date)->setTime(23, 59, 59);
+
+        // Supprimer les signatures en attente du jour
+        $pendingSignatures = $signatureRepo->findPendingByPromotionAndDate($promotion, $date);
+        foreach ($pendingSignatures as $sig) {
+            $entityManager->remove($sig);
+        }
+
+        // Supprimer les attendances du jour
+        $attendances = $attendanceRepo->findTodayAttendanceByPromotion($promotion, $date);
+        foreach ($attendances as $att) {
+            $entityManager->remove($att);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Les signatures de la journée ont été réinitialisées. Les étudiants peuvent à nouveau signer leur présence.');
+        return $this->redirectToRoute('app_attendance_sheet', ['id' => $promotion->getId(), 'date' => $date->format('Y-m-d')]);
     }
 }
