@@ -73,6 +73,7 @@ class AttendanceSignatureType extends AbstractType
         $resolver->setDefaults([
             'data_class'   => AttendanceSignature::class,
             'current_user' => null,
+            'initial_status' => null,
         ]);
         $resolver->setAllowedTypes('current_user', ['null', User::class]);
     }
