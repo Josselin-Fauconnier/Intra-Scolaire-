@@ -21,9 +21,6 @@ a {
   transition: color var(--transition-fast), opacity var(--transition-fast);
 }
 
-a:hover {
-  color: var(--color-primary);
-}
 
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -253,7 +250,6 @@ code {
 
 .btn:hover {
   transform: translateY(-1px);
-  color: inherit;
   box-shadow: var(--shadow-md);
 }
 

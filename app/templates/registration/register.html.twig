@@ -29,26 +29,31 @@
         <div class="auth-field">
             {{ form_label(registrationForm.firstname, 'Prenom') }}
             {{ form_widget(registrationForm.firstname, { attr: { class: 'input' } }) }}
+            {{ form_errors(registrationForm.firstname) }}
         </div>
 
         <div class="auth-field">
             {{ form_label(registrationForm.lastname, 'Nom') }}
             {{ form_widget(registrationForm.lastname, { attr: { class: 'input' } }) }}
+            {{ form_errors(registrationForm.lastname) }}
         </div>
 
         <div class="auth-field">
             {{ form_label(registrationForm.phone_number, 'Telephone') }}
             {{ form_widget(registrationForm.phone_number, { attr: { class: 'input' } }) }}
+            {{ form_errors(registrationForm.phone_number) }}
         </div>
 
         <div class="auth-field">
             {{ form_label(registrationForm.email, 'Email') }}
             {{ form_widget(registrationForm.email, { attr: { class: 'input' } }) }}
+            {{ form_errors(registrationForm.email) }}
         </div>
 
         <div class="auth-field">
             {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
             {{ form_widget(registrationForm.plainPassword, { attr: { class: 'input' } }) }}
+            {{ form_errors(registrationForm.plainPassword) }}
         </div>
 
         <label class="auth-remember subtitle">
