@@ -39,6 +39,31 @@ body {
   position: relative;
   z-index: 20;
   transition: width 0.3s ease, min-width 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 70, 50, 0.35) transparent;
+}
+
+/* Chrome, Edge, Safari */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(110, 70, 50, 0.25);
+  border-radius: 999px;
+  transition: background 0.25s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(110, 70, 50, 0.45);
 }
 
 /* =========================================================
