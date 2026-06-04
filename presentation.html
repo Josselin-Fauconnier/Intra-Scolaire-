@@ -69,6 +69,7 @@
             </ul>
           </div>
         </div>
+      </div>
     </section>
 
     <!-- SLIDE 3 : ENVIRONNEMENT & LICENCE -->
@@ -79,7 +80,6 @@
           <h2>Environnement de développement &amp; Licence</h2>
         </div>
         <div class="two-cols">
-
           <div class="col-card col-solution">
             <p class="col-label">Environnement Docker</p>
             <ul>
@@ -91,7 +91,6 @@
               <li>Volumes persistants : données BDD, cache, vendor, logs</li>
             </ul>
           </div>
-
           <div class="col-card col-problem">
             <p class="col-label" style="color:#f87171;">Licence — AGPL-3.0</p>
             <ul>
@@ -101,7 +100,6 @@
               <li>Protège le projet contre une utilisation propriétaire fermée</li>
             </ul>
           </div>
-
         </div>
       </div>
     </section>
@@ -163,7 +161,7 @@
       </div>
     </section>
 
-    <!-- SLIDE 4 : AUTHENTIFICATION & SÉCURITÉ -->
+    <!-- SLIDE 5 : AUTHENTIFICATION & SÉCURITÉ -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -171,13 +169,13 @@
           <h2>Authentification &amp; Sécurité</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Connexion</p>
               <ul>
                 <li>Login / mot de passe hashé (bcrypt)</li>
                 <li>Inscription publique sur <code>/register</code></li>
+                <li>Validation email obligatoire à l'inscription (format html5)</li>
                 <li>Protection CSRF sur tous les formulaires</li>
                 <li>Rate limiting : 3 tentatives max / 30 min</li>
                 <li>Rôle &amp; promotion assignés par l'admin</li>
@@ -199,7 +197,6 @@
               </div>
             </div>
           </div>
-
           <div class="auth-right">
             <div class="code-block">
               <p class="code-label">Pare-feu global <span class="code-file">security.yaml</span></p>
@@ -219,22 +216,21 @@ access_control:
 public function index(...): Response { ... }</code></pre>
             </div>
             <div class="code-block">
-              <p class="code-label">Filtre par rôle <span class="code-file">GradesController.php</span></p>
-              <pre><code class="language-php">if ($this->isGranted('ROLE_ADMIN')) {
-    $data = $gradesRepository->findAll();
-} elseif ($this->isGranted('ROLE_TEACHER')) {
-    $data = $gradesRepository->findSubmittedByTeacher($user);
-} else {
-    $data = $gradesRepository->findByStudent($user);
-}</code></pre>
+              <p class="code-label">Validation email à l'inscription <span class="code-file">RegistrationFormType.php</span></p>
+              <pre><code class="language-php">->add('email', null, [
+    'constraints' => [
+        new NotBlank(message: 'Veuillez entrer un email.'),
+        new Email(mode: 'html5',
+            message: 'L\'adresse email n\'est pas valide.'),
+    ],
+])</code></pre>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 5 : PRÉSENCE & SIGNATURE -->
+    <!-- SLIDE 6 : PRÉSENCE & SIGNATURE -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -242,7 +238,6 @@ public function index(...): Response { ... }</code></pre>
           <h2>Présence &amp; Signature</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Formateur</p>
@@ -261,12 +256,15 @@ public function index(...): Response { ... }</code></pre>
                 <span class="aside-desc">Présent, retard ou absent — en attente de validation</span>
               </div>
               <div class="aside-row">
+                <span class="aside-role teacher">Justificatif</span>
+                <span class="aside-desc">Peut joindre un document directement à sa signature</span>
+              </div>
+              <div class="aside-row">
                 <span class="aside-role admin">Auto</span>
-                <span class="aside-desc">Une absence est créée automatiquement si absent</span>
+                <span class="aside-desc">L'absence est créée et le justificatif transféré automatiquement</span>
               </div>
             </div>
           </div>
-
           <div class="auth-right">
             <div class="code-block">
               <p class="code-label">Page réservée aux étudiants <span class="code-file">AttendanceController.php</span></p>
@@ -277,32 +275,23 @@ public function index(...): Response { ... }</code></pre>
 }</code></pre>
             </div>
             <div class="code-block">
-              <p class="code-label">Historique verrouillé <span class="code-file">AttendanceController.php</span></p>
-              <pre><code class="language-php">if (!$isToday) {
-    $this->addFlash('warning',
-        "Historique verrouillé, impossible de modifier une date passée."
-    );
-    return $this->redirectToRoute('app_attendance_sheet', [...]);
-}</code></pre>
-            </div>
-            <div class="code-block">
-              <p class="code-label">Absence créée automatiquement <span class="code-file">AttendanceController.php</span></p>
+              <p class="code-label">Justificatif transféré à l'absence <span class="code-file">AttendanceController.php</span></p>
               <pre><code class="language-php">if ($statusEnum === AttendanceType::ABSENT) {
-    if (!$existingAbsence) {
-        $absence = new Absences();
-        $absence->setUser($student);
-        $absence->setStartDate($now);
-        $entityManager->persist($absence);
+    $absence = new Absences();
+    $absence->setUser($student);
+    // transfert du doc joint à la signature
+    if ($pendingSignature->getDocument()) {
+        $absence->setDocument($pendingSignature->getDocument());
     }
+    $entityManager->persist($absence);
 }</code></pre>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 6 : NOTES & PROJETS -->
+    <!-- SLIDE 7 : NOTES & PROJETS -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -310,7 +299,6 @@ public function index(...): Response { ... }</code></pre>
           <h2>Notes &amp; Projets</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Formateur</p>
@@ -337,14 +325,7 @@ public function index(...): Response { ... }</code></pre>
               </div>
             </div>
           </div>
-
           <div class="auth-right">
-            <div class="code-block">
-              <p class="code-label">Visibilité — accès refusé si caché <span class="code-file">ProjectsController.php</span></p>
-              <pre><code class="language-php">if (!$this->isGranted('ROLE_TEACHER') && !$project->isVisibility()) {
-    throw $this->createAccessDeniedException();
-}</code></pre>
-            </div>
             <div class="code-block">
               <p class="code-label">Soumission du rendu <span class="code-file">ProjectsController.php</span></p>
               <pre><code class="language-php">if ($form->isSubmitted() && $form->isValid()) {
@@ -361,12 +342,11 @@ $grade->setUpdateHistory(new DateTime());
 $entityManager->flush();</code></pre>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 7 : DOCUMENTS -->
+    <!-- SLIDE 8 : DOCUMENTS -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -374,7 +354,6 @@ $entityManager->flush();</code></pre>
           <h2>Documents</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Formateur</p>
@@ -388,12 +367,12 @@ $entityManager->flush();</code></pre>
               <p class="feature-block-title">Étudiant</p>
               <ul>
                 <li>Dépose ses propres documents (justificatifs…)</li>
+                <li>Peut joindre un document à sa signature de présence</li>
                 <li>Ne voit que ses propres documents</li>
                 <li>Peut modifier ou supprimer uniquement les siens</li>
               </ul>
             </div>
           </div>
-
           <div class="auth-right">
             <div class="code-block">
               <p class="code-label">Filtre — étudiant voit seulement les siens <span class="code-file">DocumentsController.php</span></p>
@@ -419,12 +398,11 @@ if ($document->getPath() && file_exists($path)) {
 $entityManager->remove($document);</code></pre>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 8 : NOTIFICATIONS -->
+    <!-- SLIDE 9 : NOTIFICATIONS -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -432,7 +410,6 @@ $entityManager->remove($document);</code></pre>
           <h2>Notifications</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Formateur</p>
@@ -468,8 +445,18 @@ $entityManager->remove($document);</code></pre>
               </div>
             </div>
           </div>
-
           <div class="auth-right">
+            <div class="code-block">
+              <p class="code-label">Formateur limité à sa promo <span class="code-file">NotificationsController.php</span></p>
+              <pre><code class="language-php">if (!$this->isGranted('ROLE_ADMIN')) {
+    if ($audience !== 'promotion') {
+        throw $this->createAccessDeniedException();
+    }
+    if ($promotion->getProfessor()?->getId() !== $currentUser->getId()) {
+        throw $this->createAccessDeniedException();
+    }
+}</code></pre>
+            </div>
             <div class="code-block">
               <p class="code-label">Ciblage des destinataires <span class="code-file">NotificationsController.php</span></p>
               <pre><code class="language-php">$recipients = match ($audience) {
@@ -480,30 +467,12 @@ $entityManager->remove($document);</code></pre>
     default     => $userRepository->findAll(),
 };</code></pre>
             </div>
-            <div class="code-block code-block-sm">
-              <p class="code-label">Expéditeur auto marqué lu <span class="code-file">NotificationsController.php</span></p>
-              <pre><code class="language-php">// Destinataires → non lu par défaut
-foreach ($recipients as $user) {
-    $r = new NotificationRecipients();
-    $r->setUserId($user);
-    $r->setIsRead(false);
-    $entityManager->persist($r);
-}
-// Expéditeur → déjà lu
-if (!in_array($currentUser, $recipients, true)) {
-    $s = new NotificationRecipients();
-    $s->setUserId($currentUser);
-    $s->setIsRead(true);
-    $entityManager->persist($s);
-}</code></pre>
-            </div>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 9 : ADMINISTRATION -->
+    <!-- SLIDE 10 : ADMINISTRATION -->
     <section>
       <div class="slide-content">
         <div class="slide-header">
@@ -511,7 +480,6 @@ if (!in_array($currentUser, $recipients, true)) {
           <h2>Administration</h2>
         </div>
         <div class="auth-layout">
-
           <div class="auth-left">
             <div class="feature-block">
               <p class="feature-block-title">Formateur</p>
@@ -531,7 +499,6 @@ if (!in_array($currentUser, $recipients, true)) {
               </ul>
             </div>
           </div>
-
           <div class="auth-right">
             <div class="code-block">
               <p class="code-label">Changement de rôle sécurisé <span class="code-file">AdminController.php</span></p>
@@ -550,7 +517,7 @@ public function setRole(Request $request, User $user, ...): Response
             <div class="code-block">
               <p class="code-label">Affectation de promotions <span class="code-file">AdminController.php</span></p>
               <pre><code class="language-php">foreach ($user->getPromotionUsers() as $oldLink) {
-    $em->remove($oldLink); // supprime les anciennes
+    $em->remove($oldLink);
 }
 foreach ($selectedPromotions as $p) {
     $pu = new PromotionUsers();
@@ -560,7 +527,6 @@ foreach ($selectedPromotions as $p) {
 }</code></pre>
             </div>
           </div>
-
         </div>
       </div>
     </section>
