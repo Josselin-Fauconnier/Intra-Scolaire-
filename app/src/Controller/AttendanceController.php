@@ -240,7 +240,9 @@ final class AttendanceController extends AbstractController
             $pendingSignature->setStudent($user);
         }
 
-        $form = $this->createForm(AttendanceSignatureType::class, $pendingSignature);
+        $form = $this->createForm(AttendanceSignatureType::class, $pendingSignature, [
+            'initial_status' => $pendingSignature->getStatus()?->value,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {

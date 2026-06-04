@@ -25,6 +25,7 @@ class AttendanceSignatureType extends AbstractType
                 'expanded' => true,
                 'multiple' => false,
                 'mapped' => false,
+                'data' => $options['initial_status'],
                 'choice_value' => fn(?string $value) => $value,
                 'choice_label' => fn(string $value) => $value === AttendanceType::PENDING_PRESENT->value ? 'Je suis présent(e)' : ($value === AttendanceType::PENDING_LATE->value ? 'Je suis en retard' : 'Je suis absent(e)'),
                 'choice_translation_domain' => false,
@@ -40,6 +41,7 @@ class AttendanceSignatureType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => AttendanceSignature::class,
+            'initial_status' => null,
         ]);
     }
 }
