@@ -31,58 +31,78 @@
             {% endif %}
         </div>
         <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead>
+         <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Étudiant</th>
+                    <th>Demande</th>
+                    <th>Heure</th>
+                    <th>Commentaire</th>
+                    <th>Justificatif</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if pendingSignatures is empty %}
                     <tr>
-                        <th>Étudiant</th>
-                        <th>Demande</th>
-                        <th>Heure</th>
-                        <th>Commentaire</th>
-                        <th>Actions</th>
+                        <td colspan="6" class="text-center text-muted">Aucune signature en attente pour cette date.</td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% if pendingSignatures is empty %}
+                {% else %}
+                    {% for signature in pendingSignatures %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted">Aucune signature en attente pour cette date.</td>
+                            {# 1. Étudiant #}
+                            <td>{{ signature.student.firstname|capitalize }} {{ signature.student.lastname|upper }}</td>
+                            
+                            {# 2. Demande #}
+                            <td>
+                                {% if signature.status.value == 'pending_present' %}
+                                    Présent demandé
+                                {% elseif signature.status.value == 'pending_late' %}
+                                    Retard demandé
+                                {% else %}
+                                    Absent demandé
+                                {% endif %}
+                            </td>
+                            
+                            {# 3. Heure #}
+                            <td>{{ signature.signedAt ? signature.signedAt|date('d/m/Y H:i') : '-' }}</td>
+                            
+                            {# 4. Commentaire #}
+                            <td>{{ signature.comment ?: '-' }}</td>
+                            
+                            {# 5. Justificatif #}
+                            <td>
+                                {% if signature.document is defined and signature.document is not null %}
+                                    
+                                    <span class="badge bg-success"><i class="bi bi-file-earmark-check"></i> {{ signature.document.title }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            {# 6. Actions #}
+                            <td>
+                                <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                    <input type="hidden" name="status" value="present">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-success me-1">Présent</button>
+                                </form>
+                                <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                    <input type="hidden" name="status" value="late">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-warning me-1">Retard</button>
+                                </form>
+                                <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
+                                    <input type="hidden" name="status" value="absent">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Absent</button>
+                                </form>
+                            </td>
                         </tr>
-                    {% else %}
-                        {% for signature in pendingSignatures %}
-                            <tr>
-                                <td>{{ signature.student.firstname|capitalize }} {{ signature.student.lastname|upper }}</td>
-                                <td>
-                                    {% if signature.status.value == 'pending_present' %}
-                                        Présent demandé
-                                    {% elseif signature.status.value == 'pending_late' %}
-                                        Retard demandé
-                                    {% else %}
-                                        Absent demandé
-                                    {% endif %}
-                                </td>
-                                <td>{{ signature.signedAt ? signature.signedAt|date('d/m/Y H:i') : '-' }}</td>
-                                <td>{{ signature.comment ?: '-' }}</td>
-                                <td>
-                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
-                                        <input type="hidden" name="status" value="present">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-success me-1">Présent</button>
-                                    </form>
-                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
-                                        <input type="hidden" name="status" value="late">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-warning me-1">Retard</button>
-                                    </form>
-                                    <form action="{{ path('app_attendance_signature_validate', {id: signature.id}) }}" method="post" class="d-inline-block">
-                                        <input type="hidden" name="status" value="absent">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('validate_signature' ~ signature.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">Absent</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
         </div>
     </div>
 

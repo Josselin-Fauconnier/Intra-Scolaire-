@@ -34,7 +34,8 @@
                 {% endif %}
 
                 <div class="dashboard-form-fields">
-                    <div>
+                    {# 1. Sélection du statut #}
+                    <div class="mb-3">
                         {{ form_label(form.status) }}
                         <div class="dashboard-form-status">
                             {% for choice in form.status %}
@@ -46,7 +47,16 @@
                             {{ form_errors(form.status) }}
                         </div>
                     </div>
-                    <div>
+                    
+                    {# 2. Sélection du justificatif (Ajout d'un ID de groupe pour le cibler en JS) #}
+                    <div class="mb-3" id="document-group">
+                        {{ form_label(form.document) }}
+                        {{ form_widget(form.document, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.document) }}
+                    </div>
+
+                    {# 3. Commentaire #}
+                    <div class="mb-3">
                         {{ form_label(form.comment) }}
                         {{ form_widget(form.comment, {'attr': {'class': 'form-control', 'rows': 3}}) }}
                         {{ form_errors(form.comment) }}
@@ -61,6 +71,55 @@
                 </div>
             </div>
         {{ form_end(form) }}
+
+        {# BLOC JAVASCRIPT #}
+        <script>
+            (function() {
+                function initDocumentToggle() {
+                    // Sélection des boutons radio du statut et du conteneur du justificatif
+                    const statusRadios = document.querySelectorAll('input[name="{{ form.status.vars.full_name }}"]');
+                    const documentGroup = document.getElementById('document-group');
+                    
+                    if (!documentGroup || statusRadios.length === 0) return;
+
+                    function toggleDocumentField() {
+                        let selectedValue = '';
+                        statusRadios.forEach(radio => {
+                            if (radio.checked) {
+                                selectedValue = radio.value;
+                            }
+                        });
+
+                        // Les valeurs attendues proviennent de ton AttendanceType Enum (ex: 'pending_late', 'pending_absent')
+                        // On vérifie si la valeur contient 'late' ou 'absent'
+                        if (selectedValue.includes('absent') || selectedValue.includes('late')) {
+                            documentGroup.style.display = 'block';
+                        } else {
+                            documentGroup.style.display = 'none';
+                            // Optionnel : Réinitialise le select si masqué
+                            const select = documentGroup.querySelector('select');
+                            if (select) select.value = '';
+                        }
+                    }
+
+                    // Écoute des changements sur chaque bouton radio
+                    statusRadios.forEach(radio => {
+                        radio.addEventListener('change', toggleDocumentField);
+                    });
+
+                    // Exécution immédiate pour appliquer l'état au chargement (ex: en cas d'erreur de formulaire)
+                    toggleDocumentField();
+                }
+
+                // Initialisation compatible avec le chargement classique et les requêtes Turbo Frame / Turbo Drive
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDocumentToggle);
+                } else {
+                    initDocumentToggle();
+                }
+                document.addEventListener('turbo:load', initDocumentToggle);
+            })();
+        </script>
     {% endif %}
 </turbo-frame>
 {% endblock %}
