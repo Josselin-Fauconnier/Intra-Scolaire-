@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Documents;
 use App\Entity\Promotions;
 use App\Entity\User;
 use App\Enum\AttendanceType;
@@ -36,6 +37,9 @@ class AttendanceSignature
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $signedAt = null;
+
+    #[ORM\ManyToOne]
+    private ?Documents $document = null;
 
     public function getId(): ?int
     {
@@ -112,5 +116,16 @@ class AttendanceSignature
         $this->signedAt = $signedAt;
 
         return $this;
+    }
+    public function setDocument(?Documents $document): self
+    {
+        $this->document = $document;
+
+        return $this;
+    }
+
+    public function getDocument(): ?Documents
+    {
+        return $this->document;
     }
 }
