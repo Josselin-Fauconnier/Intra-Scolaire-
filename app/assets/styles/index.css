@@ -562,3 +562,15 @@ textarea {
 .auth-link:hover {
   text-decoration: underline;
 }
+
+.auth-field ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+.auth-field ul li {
+  color: #e53e3e;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
