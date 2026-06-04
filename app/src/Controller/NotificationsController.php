@@ -137,6 +137,10 @@ final class NotificationsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function edit(Request $request, Notifications $notification, EntityManagerInterface $entityManager): Response
     {
+        if ($notification->getSender()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
         $form = $this->createForm(NotificationsType::class, $notification, [
             'current_user' => $this->getUser(),
         ]);
@@ -158,6 +162,10 @@ final class NotificationsController extends AbstractController
     #[IsGranted('ROLE_TEACHER')]
     public function delete(Request $request, Notifications $notification, EntityManagerInterface $entityManager): Response
     {
+        if ($notification->getSender()?->getId() !== $this->getUser()->getId()) {
+            throw $this->createAccessDeniedException();
+        }
+
         if ($this->isCsrfTokenValid('delete'.$notification->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($notification);
             $entityManager->flush();

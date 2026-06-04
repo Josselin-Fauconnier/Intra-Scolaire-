@@ -24,6 +24,10 @@ security:
                 target: app_login
             custom_authenticator: App\Security\AppAuthenticator
 
+            login_throttling:
+                max_attempts: 3
+                interval: '30 minutes'
+
             remember_me:
                 secret: "%kernel.secret%"
                 lifetime: 604800
