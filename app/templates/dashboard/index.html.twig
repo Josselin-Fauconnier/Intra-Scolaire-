@@ -84,7 +84,7 @@
                 </a>
             </li>
             {% endif %}
-
+            {% if not is_granted('ROLE_VISITOR') %}
             <li>
                 <a href="{{ path('app_notifications_index') }}"
                    class="sidebar-link"
@@ -98,7 +98,7 @@
                     {% endif %}
                 </a>
             </li>
-
+            {% endif %}
             {% if is_granted('ROLE_TEACHER') or is_granted('ROLE_VISITOR')  %}
             <li>
                 <a href="{{ path('app_admin_users') }}"
