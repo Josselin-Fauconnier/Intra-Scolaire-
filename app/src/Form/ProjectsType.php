@@ -21,7 +21,9 @@ class ProjectsType extends AbstractType
             ->add('due_date')
             ->add('promotions', EntityType::class, [
                 'class' => Promotions::class,
-                'choice_label' => 'id',
+                'choice_label' => function (Promotions $promotion) {
+                    return sprintf('(%d) - %s', $promotion->getId(), $promotion->getName());
+                },
                 'multiple' => true,
                 'required' => false,
             ])

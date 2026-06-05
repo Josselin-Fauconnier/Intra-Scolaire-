@@ -34,7 +34,9 @@ class PromotionsType extends AbstractType
             ])
             ->add('projects', EntityType::class, [
                 'class' => Projects::class,
-                'choice_label' => 'title',
+                'choice_label' => function (Projects $project) {
+                    return sprintf('(%d) - %s', $project->getId(), $project->getTitle());
+                },
                 'multiple' => true,
                 'by_reference' => false,
                 'required' => false,
