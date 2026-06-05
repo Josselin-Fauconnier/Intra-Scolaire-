@@ -45,6 +45,7 @@
                     <span class="sidebar-label">Absences</span>
                 </a>
             </li>
+            {% if not is_granted('ROLE_VISITOR') %}
             <li>
                 <a href="{{ path('app_grades_index') }}"
                    class="sidebar-link"
@@ -54,6 +55,7 @@
                     {{ is_granted('ROLE_TEACHER') ? 'À noter' : 'Notes' }}
                 </a>
             </li>
+            {% endif %}
             <li>
                 <a href="{{ path('app_documents_index') }}"
                    class="sidebar-link"
