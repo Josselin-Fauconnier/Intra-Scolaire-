@@ -110,6 +110,16 @@ final class AttendanceController extends AbstractController
                         $absence->setUser($student);
                         $absence->setStartDate($now);
                         $absence->setEndDate(null);
+
+                        // ==========================================
+                        // AJOUT 1 : Transfert du document (Appel général)
+                        // ==========================================
+                        $studentSignature = $signatureRepo->findOneByStudentAndDate($student, $attendanceDate);
+                        if ($studentSignature && $studentSignature->getDocument()) {
+                            $absence->setDocument($studentSignature->getDocument());
+                        }
+                        // ==========================================
+
                         $entityManager->persist($absence);
                     }
                 } elseif ($existingAbsence) {
@@ -179,6 +189,15 @@ final class AttendanceController extends AbstractController
                 $absence->setUser($student);
                 $absence->setStartDate($now);
                 $absence->setEndDate(null);
+
+                // ==========================================
+                // AJOUT 2 : Transfert du document (Action de ligne)
+                // ==========================================
+                if ($pendingSignature->getDocument()) {
+                    $absence->setDocument($pendingSignature->getDocument());
+                }
+                // ==========================================
+
                 $entityManager->persist($absence);
             }
         } elseif ($existingAbsence) {
@@ -240,7 +259,9 @@ final class AttendanceController extends AbstractController
             $pendingSignature->setStudent($user);
         }
 
-        $form = $this->createForm(AttendanceSignatureType::class, $pendingSignature);
+        $form = $this->createForm(AttendanceSignatureType::class, $pendingSignature, [
+            'initial_status' => $pendingSignature->getStatus()?->value,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -250,39 +271,23 @@ final class AttendanceController extends AbstractController
             } catch (\Throwable $e) {
                 // ignore logging failure
             }
+
             if ($form->isValid()) {
-                // Récupère le statut envoyé (champ non mappé) et le convertit en enum
                 $statusRaw = $form->get('status')->getData();
-                try {
-                    $this->container->get('logger')->info('Attendance sign statusRaw', ['statusRaw' => $statusRaw]);
-                } catch (\Throwable $e) {
-                }
                 try {
                     $pendingSignature->setStatus(AttendanceType::from($statusRaw));
                 } catch (\ValueError $e) {
-                    // ignore invalid status and set default
                     $pendingSignature->setStatus(AttendanceType::PENDING_PRESENT);
                 }
 
                 $pendingSignature->setSignedAt(new \DateTime());
-                try {
-                    $entityManager->persist($pendingSignature);
-                    $entityManager->flush();
-                    try {
-                        $this->container->get('logger')->info('Attendance sign persisted', ['id' => $pendingSignature->getId()]);
-                    } catch (\Throwable $e) {
-                    }
 
-                    $this->addFlash('success', 'Votre demande de présence est envoyée et en attente de validation du professeur.');
-                    return $this->redirectToRoute('app_dashboard');
-                } catch (\Throwable $e) {
-                    $this->addFlash('danger', 'Erreur lors de l\'enregistrement : ' . $e->getMessage());
-                    // Log the exception to the profiler/logs
-                    try {
-                        $this->container->get('logger')->error('Attendance sign persist error', ['exception' => $e]);
-                    } catch (\Throwable $ex) {
-                    }
-                }
+                // Le document s'enregistre TOUT SEUL maintenant grâce au mapping automatique !
+                $entityManager->persist($pendingSignature);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Votre demande de présence est envoyée.');
+                return $this->redirectToRoute('app_dashboard');
             } else {
                 $messages = [];
                 foreach ($form->getErrors(true) as $error) {

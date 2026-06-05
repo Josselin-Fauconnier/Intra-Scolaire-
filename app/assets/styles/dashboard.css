@@ -449,6 +449,7 @@ body {
   border-radius: var(--radius-xl);
   padding: clamp(1.1rem, 3vw, 1.8rem);
   box-shadow: var(--shadow-sm);
+  margin: bottom 20px;
 }
 
 .dashboard-form-shell-compact {
